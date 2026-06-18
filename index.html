@@ -4,257 +4,906 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sophia AI — Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; }
-    
-    /* Header */
-    .header { background: #111118; border-bottom: 1px solid #1e1e2e; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
-    .logo { font-size: 1.25rem; font-weight: 700; background: linear-gradient(135deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .header-actions { display: flex; gap: 1rem; align-items: center; }
-    .btn { padding: 0.5rem 1rem; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; }
-    .btn-primary { background: linear-gradient(135deg, #7c3aed, #3b82f6); color: white; }
-    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-    .btn-success { background: #059669; color: white; }
-    .btn-danger { background: #dc2626; color: white; }
-    .btn-outline { background: transparent; border: 1px solid #374151; color: #d1d5db; }
-    .btn-outline:hover { border-color: #6b7280; }
-    .btn-sm { padding: 0.25rem 0.75rem; font-size: 0.75rem; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #07070d;
+      --surface: #0f0f1a;
+      --surface2: #13131f;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --text: #e2e2f0;
+      --muted: #5a5a7a;
+      --muted2: #8888aa;
+      --accent: #a78bfa;
+      --accent2: #60a5fa;
+      --green: #34d399;
+      --red: #f87171;
+      --amber: #fbbf24;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* Stats bar */
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; padding: 1.5rem 2rem; }
-    .stat-card { background: #111118; border: 1px solid #1e1e2e; border-radius: 12px; padding: 1rem; }
-    .stat-value { font-size: 1.75rem; font-weight: 700; color: #f9fafb; }
-    .stat-label { font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    /* ---- HEADER ---- */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(8px);
+    }
+    .logo {
+      font-size: 1.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+    }
+    .header-right { display: flex; gap: 0.625rem; align-items: center; }
 
-    /* Filters */
-    .filters { display: flex; gap: 0.75rem; padding: 0 2rem 1rem; flex-wrap: wrap; }
-    .filter-select, .filter-input { background: #111118; border: 1px solid #1e1e2e; color: #e0e0e0; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.875rem; }
+    /* ---- BUTTONS ---- */
+    .btn {
+      padding: 0.45rem 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: all 0.18s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+    }
+    .btn-primary { background: linear-gradient(135deg, #7c3aed, #3b82f6); color: #fff; }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-success { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.25); }
+    .btn-success:hover { background: rgba(52,211,153,0.25); }
+    .btn-danger { background: rgba(248,113,113,0.12); color: var(--red); border: 1px solid rgba(248,113,113,0.22); }
+    .btn-danger:hover { background: rgba(248,113,113,0.22); }
+    .btn-blue { background: rgba(96,165,250,0.12); color: var(--accent2); border: 1px solid rgba(96,165,250,0.22); }
+    .btn-blue:hover { background: rgba(96,165,250,0.22); }
+    .btn-outline { background: transparent; border: 1px solid var(--border2); color: var(--muted2); }
+    .btn-outline:hover { border-color: rgba(255,255,255,0.22); color: var(--text); }
+    .btn-ghost { background: transparent; border: none; color: var(--muted2); }
+    .btn-ghost:hover { color: var(--text); }
+    .btn-sm { padding: 0.3rem 0.65rem; font-size: 0.72rem; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+
+    /* ---- MAIN LAYOUT ---- */
+    .main { max-width: 1320px; margin: 0 auto; padding: 2rem; }
+
+    /* ---- STAT CARDS ---- */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .stat-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-val {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+      min-height: 2.2rem;
+    }
+    .stat-lbl { font-size: 0.72rem; color: var(--muted); margin-top: 0.4rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat-delta { font-size: 0.72rem; color: var(--green); margin-top: 0.25rem; }
+
+    /* ---- CHARTS ROW ---- */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 900px) { .charts-row { grid-template-columns: 1fr; } }
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+    }
+    .chart-title { font-size: 0.8rem; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem; }
+    .chart-canvas-wrap { position: relative; height: 180px; }
+
+    /* Funnel */
+    .funnel { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
+    .funnel-row { display: flex; align-items: center; gap: 0.75rem; }
+    .funnel-bar-wrap { flex: 1; background: rgba(255,255,255,0.05); border-radius: 4px; height: 28px; overflow: hidden; }
+    .funnel-bar {
+      height: 100%;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding-left: 0.6rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #fff;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 0%;
+    }
+    .funnel-label { font-size: 0.72rem; color: var(--muted2); width: 70px; text-align: right; text-transform: uppercase; letter-spacing: 0.04em; }
+    .funnel-count { font-size: 0.8rem; font-weight: 700; width: 36px; text-align: right; color: var(--text); }
+    .funnel-bar-new { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+    .funnel-bar-approved { background: linear-gradient(90deg, #059669, #34d399); }
+    .funnel-bar-sent { background: linear-gradient(90deg, #1d4ed8, #60a5fa); }
+    .funnel-bar-rejected { background: linear-gradient(90deg, #991b1b, #f87171); }
+
+    /* Top cities list */
+    .cities-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
+    .city-row { display: flex; align-items: center; gap: 0.625rem; }
+    .city-name { font-size: 0.8rem; width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .city-bar-wrap { flex: 1; background: rgba(255,255,255,0.05); border-radius: 3px; height: 10px; }
+    .city-bar {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 0%;
+    }
+    .city-count { font-size: 0.72rem; color: var(--muted2); width: 24px; text-align: right; }
+
+    /* ---- DISCOVER PANEL ---- */
+    .discover-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem;
+      display: none;
+    }
+    .discover-panel.open { display: block; }
+    .discover-panel h3 { font-size: 0.9rem; color: var(--muted2); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .discover-form { display: flex; gap: 0.625rem; flex-wrap: wrap; align-items: flex-end; }
+    .discover-form .field { display: flex; flex-direction: column; gap: 0.25rem; }
+    .discover-form label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .discover-form input, .discover-form select {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 0.45rem 0.75rem;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      min-width: 110px;
+    }
+    .discover-form input:focus, .discover-form select:focus { outline: none; border-color: var(--accent); }
+
+    /* ---- FILTERS ---- */
+    .leads-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .filters { display: flex; gap: 0.625rem; flex-wrap: wrap; align-items: center; }
+    .filter-select, .filter-input {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 0.45rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+    }
     .filter-input { min-width: 200px; }
-    .filter-input::placeholder { color: #4b5563; }
+    .filter-input::placeholder { color: var(--muted); }
+    .filter-select:focus, .filter-input:focus { outline: none; border-color: var(--accent); }
 
-    /* Table */
-    .table-wrap { padding: 0 2rem 2rem; overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-    th { text-align: left; padding: 0.75rem; background: #111118; border-bottom: 2px solid #1e1e2e; color: #9ca3af; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    td { padding: 0.75rem; border-bottom: 1px solid #1e1e2e; }
-    tr:hover { background: #111118; }
-    .lead-name { font-weight: 600; color: #f9fafb; }
-    .lead-city { color: #9ca3af; font-size: 0.8rem; }
-    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
-    .badge-new { background: #1e3a5f; color: #60a5fa; }
-    .badge-approved { background: #064e3b; color: #34d399; }
-    .badge-rejected { background: #7f1d1d; color: #fca5a5; }
-    .badge-contact { background: #4a1d96; color: #c4b5fd; }
-    .stars { color: #fbbf24; }
+    /* ---- TABLE ---- */
+    .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; background: var(--surface); }
+    th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      color: var(--muted2);
+      font-weight: 600;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background 0.12s; }
+    tbody tr:hover { background: var(--surface2); }
+    .lead-name { font-weight: 600; color: #f0f0fc; }
+    .lead-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.15rem; }
+    .badge {
+      display: inline-block;
+      padding: 0.18rem 0.5rem;
+      border-radius: 5px;
+      font-size: 0.67rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .badge-new { background: rgba(167,139,250,0.15); color: #a78bfa; }
+    .badge-approved { background: rgba(52,211,153,0.12); color: #34d399; }
+    .badge-sent { background: rgba(96,165,250,0.12); color: #60a5fa; }
+    .badge-rejected { background: rgba(248,113,113,0.1); color: #f87171; }
+    .badge-contacted { background: rgba(251,191,36,0.12); color: #fbbf24; }
+    .stars { color: var(--amber); font-size: 0.75rem; }
 
-    /* Loading */
-    .loading { text-align: center; padding: 3rem; color: #6b7280; }
-    .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid #374151; border-top-color: #7c3aed; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 0.5rem; }
+    /* ---- LOADING / EMPTY ---- */
+    .loading { text-align: center; padding: 3rem; color: var(--muted); }
+    .spinner {
+      display: inline-block;
+      width: 20px; height: 20px;
+      border: 2.5px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
+    .empty { text-align: center; padding: 4rem; color: var(--muted); font-size: 1rem; }
 
-    /* Modal */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+    /* ---- PAGINATION ---- */
+    .pagination {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem 0 0;
+      align-items: center;
+      justify-content: center;
+    }
+    .pagination span { color: var(--muted2); font-size: 0.8rem; }
+
+    /* ---- EMAIL MODAL ---- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      backdrop-filter: blur(4px);
+    }
     .modal-overlay.active { display: flex; }
-    .modal { background: #111118; border: 1px solid #1e1e2e; border-radius: 16px; padding: 2rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
-    .modal h2 { font-size: 1.25rem; margin-bottom: 1rem; color: #f9fafb; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 18px;
+      padding: 2rem;
+      max-width: 680px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: popIn 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes popIn { from { transform: scale(0.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.25rem; gap: 1rem; }
+    .modal-title { font-size: 1.1rem; font-weight: 700; color: #f0f0fc; }
+    .modal-lead-meta { font-size: 0.75rem; color: var(--muted2); margin-top: 0.25rem; }
     .modal .field { margin-bottom: 1rem; }
-    .modal .field label { display: block; font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem; text-transform: uppercase; }
-    .modal .field .value { color: #e0e0e0; font-size: 0.9rem; }
-    .modal textarea { width: 100%; min-height: 200px; background: #0a0a0f; border: 1px solid #1e1e2e; color: #e0e0e0; padding: 1rem; border-radius: 8px; font-size: 0.85rem; line-height: 1.6; font-family: inherit; resize: vertical; }
-    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+    .modal .field label { display: block; font-size: 0.7rem; color: var(--muted); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .modal input[type="text"] {
+      width: 100%;
+      background: #0a0a14;
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 0.6rem 0.875rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-family: inherit;
+    }
+    .modal input[type="text"]:focus, .modal textarea:focus { outline: none; border-color: var(--accent); }
+    .modal textarea {
+      width: 100%;
+      min-height: 220px;
+      background: #0a0a14;
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 0.875rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      font-family: inherit;
+      resize: vertical;
+    }
+    .modal-actions { display: flex; gap: 0.625rem; justify-content: flex-end; margin-top: 1.5rem; flex-wrap: wrap; }
+    .modal-spinner { display: none; }
+    .modal-spinner.active { display: inline-block; }
 
-    /* Flash */
-    .flash { position: fixed; top: 1rem; right: 1rem; padding: 0.75rem 1.25rem; border-radius: 8px; font-size: 0.875rem; z-index: 200; animation: slideIn 0.3s ease; }
-    .flash-success { background: #059669; color: white; }
-    .flash-error { background: #dc2626; color: white; }
-    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    /* ---- TOAST ---- */
+    .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 999; display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none; }
+    .toast {
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      animation: toastIn 0.25s ease;
+      pointer-events: all;
+      max-width: 320px;
+      backdrop-filter: blur(8px);
+    }
+    .toast-success { background: rgba(52,211,153,0.9); color: #003322; }
+    .toast-error { background: rgba(248,113,113,0.9); color: #330000; }
+    .toast-info { background: rgba(96,165,250,0.9); color: #001a33; }
+    @keyframes toastIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-    /* Pagination */
-    .pagination { display: flex; gap: 0.5rem; padding: 1rem 2rem; align-items: center; justify-content: center; }
-    .pagination span { color: #9ca3af; font-size: 0.875rem; }
-
-    .empty { text-align: center; padding: 4rem; color: #4b5563; font-size: 1.1rem; }
+    /* ---- COUNT-UP ANIMATION ---- */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .stat-card { animation: fadeUp 0.4s ease both; }
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.10s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+    .stat-card:nth-child(4) { animation-delay: 0.20s; }
+    .stat-card:nth-child(5) { animation-delay: 0.25s; }
+    .stat-card:nth-child(6) { animation-delay: 0.30s; }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div>
-      <div class="logo">Sophia AI Admin</div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">Sophia AI Admin</div>
+    <div class="header-right">
+      <button class="btn btn-primary" id="discover-toggle-btn">&#128270; Discover</button>
+      <button class="btn btn-outline" onclick="refreshAll()">&#8635; Refresh</button>
     </div>
-    <div class="header-actions">
-      <button class="btn btn-primary" onclick="discoverLeads()">🔍 Discover Leads</button>
-      <button class="btn btn-outline" onclick="refreshData()">↻ Refresh</button>
+  </header>
+
+  <div class="main">
+
+    <!-- Stat Cards -->
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-val" id="s-total">—</div><div class="stat-lbl">Total Leads</div></div>
+      <div class="stat-card"><div class="stat-val" id="s-new">—</div><div class="stat-lbl">New</div></div>
+      <div class="stat-card"><div class="stat-val" id="s-approved">—</div><div class="stat-lbl">Approved</div></div>
+      <div class="stat-card"><div class="stat-val" id="s-sent">—</div><div class="stat-lbl">Sent</div></div>
+      <div class="stat-card"><div class="stat-val" id="s-sessions">—</div><div class="stat-lbl">Discovery Sessions</div></div>
+      <div class="stat-card"><div class="stat-val" id="s-cities">—</div><div class="stat-lbl">Top Cities</div></div>
     </div>
-  </div>
 
-  <div class="stats" id="stats">
-    <div class="stat-card"><div class="stat-value" id="stat-total">—</div><div class="stat-label">Total Leads</div></div>
-    <div class="stat-card"><div class="stat-value" id="stat-new">—</div><div class="stat-label">New</div></div>
-    <div class="stat-card"><div class="stat-value" id="stat-approved">—</div><div class="stat-label">Approved</div></div>
-    <div class="stat-card"><div class="stat-value" id="stat-sessions">—</div><div class="stat-label">Discovery Sessions</div></div>
-    <div class="stat-card"><div class="stat-value" id="stat-cities">—</div><div class="stat-label">Cities</div></div>
-  </div>
+    <!-- Charts Row -->
+    <div class="charts-row">
+      <!-- Pipeline Funnel -->
+      <div class="chart-card">
+        <div class="chart-title">Pipeline Funnel</div>
+        <div class="funnel" id="funnel">
+          <div class="funnel-row">
+            <div class="funnel-label">New</div>
+            <div class="funnel-bar-wrap"><div class="funnel-bar funnel-bar-new" id="funnel-new">0</div></div>
+            <div class="funnel-count" id="funnel-new-count">0</div>
+          </div>
+          <div class="funnel-row">
+            <div class="funnel-label">Approved</div>
+            <div class="funnel-bar-wrap"><div class="funnel-bar funnel-bar-approved" id="funnel-approved">0</div></div>
+            <div class="funnel-count" id="funnel-approved-count">0</div>
+          </div>
+          <div class="funnel-row">
+            <div class="funnel-label">Sent</div>
+            <div class="funnel-bar-wrap"><div class="funnel-bar funnel-bar-sent" id="funnel-sent">0</div></div>
+            <div class="funnel-count" id="funnel-sent-count">0</div>
+          </div>
+          <div class="funnel-row">
+            <div class="funnel-label">Rejected</div>
+            <div class="funnel-bar-wrap"><div class="funnel-bar funnel-bar-rejected" id="funnel-rejected">0</div></div>
+            <div class="funnel-count" id="funnel-rejected-count">0</div>
+          </div>
+        </div>
+      </div>
 
-  <div class="filters">
-    <select class="filter-select" id="filter-status" onchange="loadLeads()">
-      <option value="">All Status</option>
-      <option value="new" selected>New</option>
-      <option value="approved">Approved</option>
-      <option value="rejected">Rejected</option>
-      <option value="contacted">Contacted</option>
-    </select>
-    <select class="filter-select" id="filter-category" onchange="loadLeads()">
-      <option value="">All Categories</option>
-      <option value="primary_care">Primary Care</option>
-      <option value="family_medicine">Family Medicine</option>
-      <option value="cardiology">Cardiology</option>
-      <option value="dermatology">Dermatology</option>
-      <option value="orthopedics">Orthopedics</option>
-      <option value="pediatrics">Pediatrics</option>
-      <option value="obgyn">OB/GYN</option>
-      <option value="mental_health">Mental Health</option>
-      <option value="urgent_care">Urgent Care</option>
-    </select>
-    <input class="filter-input" id="filter-search" placeholder="Search by name, email, city..." onkeyup="debounceSearch()">
-  </div>
+      <!-- By Category Donut -->
+      <div class="chart-card">
+        <div class="chart-title">By Category</div>
+        <div class="chart-canvas-wrap">
+          <canvas id="chart-category"></canvas>
+        </div>
+      </div>
 
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Business</th>
-          <th>Location</th>
-          <th>Contact</th>
-          <th>Rating</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="leads-body">
-        <tr><td colspan="6" class="loading"><span class="spinner"></span> Loading leads...</td></tr>
-      </tbody>
-    </table>
-  </div>
+      <!-- Top Cities -->
+      <div class="chart-card">
+        <div class="chart-title">Top Cities</div>
+        <div class="cities-list" id="cities-list">
+          <div style="color:var(--muted);font-size:0.8rem;padding-top:0.5rem">Loading…</div>
+        </div>
+      </div>
+    </div>
 
-  <div class="pagination" id="pagination"></div>
+    <!-- Discover Panel -->
+    <div class="discover-panel" id="discover-panel">
+      <h3>&#128270; Launch Discovery</h3>
+      <div class="discover-form">
+        <div class="field">
+          <label>City</label>
+          <input type="text" id="d-city" placeholder="e.g. Miami" value="Miami">
+        </div>
+        <div class="field">
+          <label>State</label>
+          <input type="text" id="d-state" placeholder="e.g. FL" value="FL" style="min-width:70px;max-width:80px">
+        </div>
+        <div class="field">
+          <label>Category</label>
+          <select id="d-category">
+            <option value="primary_care">Primary Care</option>
+            <option value="family_medicine">Family Medicine</option>
+            <option value="cardiology">Cardiology</option>
+            <option value="dermatology">Dermatology</option>
+            <option value="orthopedics">Orthopedics</option>
+            <option value="pediatrics">Pediatrics</option>
+            <option value="obgyn">OB/GYN</option>
+            <option value="mental_health">Mental Health</option>
+            <option value="urgent_care">Urgent Care</option>
+            <option value="dental">Dental</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Max Leads</label>
+          <input type="text" id="d-max" value="10" style="max-width:70px">
+        </div>
+        <button class="btn btn-primary" onclick="launchDiscovery()">&#9654; Start</button>
+        <button class="btn btn-ghost" onclick="toggleDiscover()">Cancel</button>
+      </div>
+    </div>
 
-  <!-- Email Preview Modal -->
+    <!-- Leads Section -->
+    <div class="leads-header">
+      <div class="filters">
+        <select class="filter-select" id="filter-status" onchange="loadLeads()">
+          <option value="">All Status</option>
+          <option value="new" selected>New</option>
+          <option value="approved">Approved</option>
+          <option value="sent">Sent</option>
+          <option value="rejected">Rejected</option>
+          <option value="contacted">Contacted</option>
+        </select>
+        <select class="filter-select" id="filter-category" onchange="loadLeads()">
+          <option value="">All Categories</option>
+          <option value="primary_care">Primary Care</option>
+          <option value="family_medicine">Family Medicine</option>
+          <option value="cardiology">Cardiology</option>
+          <option value="dermatology">Dermatology</option>
+          <option value="orthopedics">Orthopedics</option>
+          <option value="pediatrics">Pediatrics</option>
+          <option value="obgyn">OB/GYN</option>
+          <option value="mental_health">Mental Health</option>
+          <option value="urgent_care">Urgent Care</option>
+          <option value="dental">Dental</option>
+        </select>
+        <input class="filter-input" id="filter-search" placeholder="Search name, email, city…" oninput="debounceSearch()">
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Business</th>
+            <th>Location</th>
+            <th>Contact</th>
+            <th>Rating</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="leads-body">
+          <tr><td colspan="6" class="loading"><span class="spinner"></span> Loading leads…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" id="pagination"></div>
+
+  </div><!-- /main -->
+
+  <!-- Email Modal -->
   <div class="modal-overlay" id="email-modal">
     <div class="modal">
-      <h2>📧 Email Preview</h2>
-      <div class="field"><label>To</label><div class="value" id="email-to">—</div></div>
-      <div class="field"><label>Subject</label><div class="value" id="email-subject">—</div></div>
-      <div class="field"><label>Body</label><textarea id="email-body" readonly></textarea></div>
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">&#128140; Email Draft</div>
+          <div class="modal-lead-meta" id="modal-lead-meta"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal()" title="Close">&#10005;</button>
+      </div>
+      <div id="modal-loading" class="loading" style="padding:2rem 0;display:none">
+        <span class="spinner"></span> Generating AI draft…
+      </div>
+      <div id="modal-content">
+        <div class="field">
+          <label>To</label>
+          <div style="font-size:0.85rem;color:var(--muted2)" id="modal-to">—</div>
+        </div>
+        <div class="field">
+          <label>Subject</label>
+          <input type="text" id="modal-subject" placeholder="Email subject">
+        </div>
+        <div class="field">
+          <label>Body</label>
+          <textarea id="modal-body" placeholder="Email body"></textarea>
+        </div>
+      </div>
       <div class="modal-actions">
-        <button class="btn btn-outline" onclick="closeModal()">Close</button>
-        <button class="btn btn-danger btn-sm" onclick="rejectLead()">✕ Reject</button>
-        <button class="btn btn-success" onclick="approveLead()">✓ Approve & Stage</button>
+        <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
+        <button class="btn btn-blue btn-sm" onclick="regenerateEmail()">&#128260; Regenerate</button>
+        <button class="btn btn-outline btn-sm" onclick="saveDraft()">&#128190; Save Draft</button>
+        <button class="btn btn-danger btn-sm" onclick="rejectFromModal()">&#10005; Reject</button>
+        <button class="btn btn-success" onclick="approveAndSend()">&#10003; Approve &amp; Send</button>
       </div>
     </div>
   </div>
 
-  <div id="flash"></div>
+  <!-- Toast container -->
+  <div class="toast-container" id="toast-container"></div>
 
   <script>
-    const API = 'https://sophiaprovider.com';
+    // ---- CONFIG ----
+    const API_BASE = 'https://sophiaprovider.com';
     const AUTH = 'Bearer sophia-admin-6f8a2c1b4d9e';
-    let currentLeadId = null;
-    let searchTimeout = null;
 
+    // ---- STATE ----
+    let currentLeadId = null;
+    let currentOffset = 0;
+    let searchTimeout = null;
+    let categoryChart = null;
+
+    // ---- API HELPER ----
     async function api(path, opts = {}) {
-      const res = await fetch(`${API}${path}`, {
-        headers: { 'Authorization': AUTH, 'Content-Type': 'application/json', ...opts.headers },
-        ...opts
+      const res = await fetch(`${API_BASE}${path}`, {
+        headers: {
+          'Authorization': AUTH,
+          'Content-Type': 'application/json',
+          ...(opts.headers || {}),
+        },
+        ...opts,
       });
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(`HTTP ${res.status}: ${text.slice(0, 120)}`);
+      }
       return res.json();
     }
 
-    function flash(msg, type = 'success') {
-      const el = document.getElementById('flash');
-      el.className = `flash flash-${type}`;
+    // ---- TOAST ----
+    function toast(msg, type = 'success') {
+      const el = document.createElement('div');
+      el.className = `toast toast-${type}`;
       el.textContent = msg;
-      setTimeout(() => el.className = '', 3000);
+      document.getElementById('toast-container').appendChild(el);
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.3s';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+      }, 3200);
     }
 
+    // ---- ESCAPE ----
+    function esc(s) {
+      if (s == null) return '';
+      const d = document.createElement('div');
+      d.textContent = String(s);
+      return d.innerHTML;
+    }
+
+    // ---- COUNT-UP ----
+    function countUp(el, target, duration = 900) {
+      const start = performance.now();
+      const from = parseInt(el.textContent) || 0;
+      const num = parseInt(target) || 0;
+      if (from === num) { el.textContent = num; return; }
+      function step(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(from + (num - from) * ease);
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    // ---- STATS + CHARTS ----
     async function loadStats() {
       try {
-        const data = await api('/api/admin/stats');
-        document.getElementById('stat-total').textContent = data.total_leads || 0;
-        document.getElementById('stat-new').textContent = data.status_counts?.new || 0;
-        document.getElementById('stat-approved').textContent = data.status_counts?.approved || 0;
-        document.getElementById('stat-sessions').textContent = data.discovery_sessions || 0;
-        document.getElementById('stat-cities').textContent = data.top_cities?.length || 0;
-      } catch(e) { console.error(e); }
+        const d = await api('/api/admin/stats');
+        const sc = d.status_counts || {};
+
+        countUp(document.getElementById('s-total'), d.total_leads || 0);
+        countUp(document.getElementById('s-new'), sc.new || 0);
+        countUp(document.getElementById('s-approved'), sc.approved || 0);
+        countUp(document.getElementById('s-sent'), sc.sent || 0);
+        countUp(document.getElementById('s-sessions'), d.discovery_sessions || 0);
+        countUp(document.getElementById('s-cities'), (d.top_cities || []).length);
+
+        // Funnel
+        const total = d.total_leads || 1;
+        const funnelData = [
+          { key: 'new',      val: sc.new || 0 },
+          { key: 'approved', val: sc.approved || 0 },
+          { key: 'sent',     val: sc.sent || 0 },
+          { key: 'rejected', val: sc.rejected || 0 },
+        ];
+        funnelData.forEach(({ key, val }) => {
+          const bar = document.getElementById(`funnel-${key}`);
+          const cnt = document.getElementById(`funnel-${key}-count`);
+          if (bar) {
+            bar.textContent = val;
+            setTimeout(() => { bar.style.width = Math.max(4, Math.round((val / total) * 100)) + '%'; }, 80);
+          }
+          if (cnt) cnt.textContent = val;
+        });
+
+        // By-category donut
+        const cats = (d.by_category || []).slice(0, 8);
+        if (cats.length) {
+          const labels = cats.map(c => (c.category || 'Other').replace(/_/g, ' '));
+          const values = cats.map(c => c.count || 0);
+          const palette = ['#a78bfa','#60a5fa','#34d399','#fbbf24','#f87171','#c084fc','#38bdf8','#fb923c'];
+          if (categoryChart) categoryChart.destroy();
+          categoryChart = new Chart(document.getElementById('chart-category').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+              labels,
+              datasets: [{ data: values, backgroundColor: palette, borderWidth: 0, hoverOffset: 6 }],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              cutout: '68%',
+              plugins: {
+                legend: {
+                  position: 'right',
+                  labels: { color: '#8888aa', font: { size: 10 }, boxWidth: 10, padding: 8 },
+                },
+                tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}` } },
+              },
+            },
+          });
+        } else {
+          document.getElementById('chart-category').parentElement.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding-top:0.5rem">No category data yet</div>';
+        }
+
+        // Top cities
+        const cities = (d.top_cities || []).slice(0, 6);
+        if (cities.length) {
+          const maxCount = Math.max(...cities.map(c => c.count || 0), 1);
+          document.getElementById('cities-list').innerHTML = cities.map(c => `
+            <div class="city-row">
+              <div class="city-name" title="${esc(c.city)}, ${esc(c.state)}">${esc(c.city)}</div>
+              <div class="city-bar-wrap">
+                <div class="city-bar" style="width:0%" data-pct="${Math.round((c.count / maxCount) * 100)}"></div>
+              </div>
+              <div class="city-count">${c.count}</div>
+            </div>
+          `).join('');
+          // animate city bars after a tick
+          setTimeout(() => {
+            document.querySelectorAll('.city-bar').forEach(b => {
+              b.style.transition = 'width 1s cubic-bezier(0.4,0,0.2,1)';
+              b.style.width = b.dataset.pct + '%';
+            });
+          }, 80);
+        } else {
+          document.getElementById('cities-list').innerHTML = '<div style="color:var(--muted);font-size:0.8rem">No city data yet</div>';
+        }
+
+      } catch (e) {
+        console.error('Stats error:', e);
+      }
     }
 
+    // ---- LEADS TABLE ----
     async function loadLeads(offset = 0) {
-      const status = document.getElementById('filter-status').value;
+      currentOffset = offset;
+      const status   = document.getElementById('filter-status').value;
       const category = document.getElementById('filter-category').value;
-      const search = document.getElementById('filter-search').value;
-      
+      const search   = document.getElementById('filter-search').value.trim();
+
       let url = `/api/admin/leads?limit=20&offset=${offset}`;
-      if (status) url += `&status=${status}`;
-      if (category) url += `&type=${category}`;
-      if (search) url += `&search=${encodeURIComponent(search)}`;
+      if (status)   url += `&status=${encodeURIComponent(status)}`;
+      if (category) url += `&category=${encodeURIComponent(category)}`;
+      if (search)   url += `&search=${encodeURIComponent(search)}`;
+
+      const tbody = document.getElementById('leads-body');
+      tbody.innerHTML = '<tr><td colspan="6" class="loading"><span class="spinner"></span> Loading…</td></tr>';
 
       try {
         const data = await api(url);
-        const tbody = document.getElementById('leads-body');
-        
-        if (!data.leads || data.leads.length === 0) {
+        const leads = data.leads || [];
+
+        if (!leads.length) {
           tbody.innerHTML = '<tr><td colspan="6" class="empty">No leads found</td></tr>';
           document.getElementById('pagination').innerHTML = '';
           return;
         }
 
-        tbody.innerHTML = data.leads.map(l => `
-          <tr>
-            <td>
-              <div class="lead-name">${esc(l.business_name)}</div>
-              <div style="font-size:0.75rem;color:#6b7280">${esc(l.category || l.organization_type || '')}</div>
-            </td>
-            <td><div>${esc(l.city)}, ${esc(l.state)}</div></td>
-            <td>
-              ${l.email ? `<div style="font-size:0.8rem">✉ ${esc(l.email)}</div>` : '<span style="color:#6b7280">No email</span>'}
-              ${l.phone ? `<div style="font-size:0.75rem;color:#9ca3af">📞 ${esc(l.phone)}</div>` : ''}
-            </td>
-            <td>
-              ${l.google_rating ? `<span class="stars">★ ${l.google_rating}</span> <span style="font-size:0.75rem;color:#6b7280">(${l.google_review_count})</span>` : '—'}
-            </td>
-            <td><span class="badge badge-${l.status}">${l.status}</span></td>
-            <td>
-              <button class="btn btn-outline btn-sm" onclick="previewEmail(${l.id})" title="Preview email">📧</button>
-              <button class="btn btn-success btn-sm" onclick="quickApprove(${l.id})" title="Approve">✓</button>
-              <button class="btn btn-danger btn-sm" onclick="quickReject(${l.id})" title="Reject">✕</button>
-            </td>
-          </tr>
-        `).join('');
+        tbody.innerHTML = leads.map(l => {
+          const statusBadge = `<span class="badge badge-${esc(l.status)}">${esc(l.status)}</span>`;
+          const rating = l.google_rating
+            ? `<span class="stars">&#9733; ${l.google_rating}</span> <span style="font-size:0.7rem;color:var(--muted)">(${l.google_review_count || 0})</span>`
+            : '—';
+          const contact = l.email
+            ? `<div style="font-size:0.78rem">&#9993; ${esc(l.email)}</div>${l.phone ? `<div style="font-size:0.72rem;color:var(--muted)">&#128222; ${esc(l.phone)}</div>` : ''}`
+            : `<span style="color:var(--muted);font-size:0.75rem">No email</span>`;
+
+          return `
+            <tr>
+              <td>
+                <div class="lead-name">${esc(l.business_name)}</div>
+                <div class="lead-sub">${esc((l.category || l.organization_type || '').replace(/_/g, ' '))}</div>
+              </td>
+              <td>
+                <div style="font-size:0.82rem">${esc(l.city)}, ${esc(l.state)}</div>
+              </td>
+              <td>${contact}</td>
+              <td>${rating}</td>
+              <td>${statusBadge}</td>
+              <td>
+                <button class="btn btn-blue btn-sm" data-action="preview" data-id="${esc(l.id)}" title="Preview email">&#128140;</button>
+                <button class="btn btn-success btn-sm" data-action="approve" data-id="${esc(l.id)}" title="Quick approve">&#10003;</button>
+                <button class="btn btn-danger btn-sm" data-action="reject" data-id="${esc(l.id)}" title="Quick reject">&#10005;</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
 
         // Pagination
-        const totalPages = Math.ceil(data.total / 20);
-        const currentPage = Math.floor(offset / 20);
-        let pagHtml = '';
-        if (offset > 0) pagHtml += `<button class="btn btn-outline btn-sm" onclick="loadLeads(${offset - 20})">← Prev</button>`;
-        pagHtml += `<span>Page ${currentPage + 1} of ${totalPages || 1} (${data.total} leads)</span>`;
-        if (offset + 20 < data.total) pagHtml += `<button class="btn btn-outline btn-sm" onclick="loadLeads(${offset + 20})">Next →</button>`;
-        document.getElementById('pagination').innerHTML = pagHtml;
+        const total = data.total || 0;
+        const totalPages = Math.ceil(total / 20);
+        const currentPage = Math.floor(offset / 20) + 1;
+        let pag = '';
+        if (offset > 0) pag += `<button class="btn btn-outline btn-sm" data-action="page" data-offset="${offset - 20}">&#8592; Prev</button>`;
+        pag += `<span>Page ${currentPage} of ${totalPages || 1} &middot; ${total} leads</span>`;
+        if (offset + 20 < total) pag += `<button class="btn btn-outline btn-sm" data-action="page" data-offset="${offset + 20}">Next &#8594;</button>`;
+        document.getElementById('pagination').innerHTML = pag;
 
-      } catch(e) {
-        document.getElementById('leads-body').innerHTML = `<tr><td colspan="6" class="loading">Error loading leads: ${esc(e.message)}</td></tr>`;
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" class="loading" style="color:var(--red)">Error: ${esc(e.message)}</td></tr>`;
       }
     }
 
+    // ---- EVENT DELEGATION for table actions ----
+    document.getElementById('leads-body').addEventListener('click', function(e) {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      if (action === 'preview') previewEmail(id);
+      else if (action === 'approve') quickApprove(id);
+      else if (action === 'reject') quickReject(id);
+    });
+
+    document.getElementById('pagination').addEventListener('click', function(e) {
+      const btn = e.target.closest('button[data-action="page"]');
+      if (!btn) return;
+      loadLeads(parseInt(btn.dataset.offset, 10));
+    });
+
+    // ---- EMAIL MODAL ----
     async function previewEmail(id) {
       currentLeadId = id;
+      document.getElementById('modal-lead-meta').textContent = '';
+      document.getElementById('modal-to').textContent = '…';
+      document.getElementById('modal-subject').value = '';
+      document.getElementById('modal-body').value = '';
+      document.getElementById('modal-loading').style.display = 'block';
+      document.getElementById('modal-content').style.opacity = '0.3';
+      document.getElementById('email-modal').classList.add('active');
+
       try {
         const data = await api(`/api/admin/leads/${id}/email`);
-        document.getElementById('email-to').textContent = data.to || '—';
-        document.getElementById('email-subject').textContent = data.subject || '—';
-        document.getElementById('email-body').value = data.body || '';
-        document.getElementById('email-modal').classList.add('active');
-      } catch(e) {
-        flash('Failed to load email preview', 'error');
+        document.getElementById('modal-to').textContent = data.to || '—';
+        document.getElementById('modal-subject').value = data.subject || '';
+        document.getElementById('modal-body').value = data.body || '';
+
+        // Show lead context if available
+        const lead = data.lead || {};
+        const meta = [
+          lead.business_name,
+          lead.city && lead.state ? `${lead.city}, ${lead.state}` : (lead.city || ''),
+          lead.phone,
+          lead.website,
+        ].filter(Boolean).join(' · ');
+        document.getElementById('modal-lead-meta').textContent = meta;
+
+      } catch (e) {
+        toast('Failed to load email draft: ' + e.message, 'error');
+        closeModal();
+      } finally {
+        document.getElementById('modal-loading').style.display = 'none';
+        document.getElementById('modal-content').style.opacity = '1';
+      }
+    }
+
+    async function regenerateEmail() {
+      if (!currentLeadId) return;
+      document.getElementById('modal-loading').style.display = 'block';
+      document.getElementById('modal-content').style.opacity = '0.35';
+      try {
+        const data = await api(`/api/admin/leads/${currentLeadId}/email/regenerate`, { method: 'POST' });
+        document.getElementById('modal-subject').value = data.subject || '';
+        document.getElementById('modal-body').value = data.body || '';
+        toast('Email regenerated');
+      } catch (e) {
+        toast('Regenerate failed: ' + e.message, 'error');
+      } finally {
+        document.getElementById('modal-loading').style.display = 'none';
+        document.getElementById('modal-content').style.opacity = '1';
+      }
+    }
+
+    async function saveDraft() {
+      if (!currentLeadId) return;
+      const subject = document.getElementById('modal-subject').value;
+      const body = document.getElementById('modal-body').value;
+      try {
+        await api(`/api/admin/leads/${currentLeadId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ email_subject: subject, email_body: body }),
+        });
+        toast('Draft saved');
+      } catch (e) {
+        toast('Save failed: ' + e.message, 'error');
+      }
+    }
+
+    async function approveAndSend() {
+      if (!currentLeadId) return;
+      const subject = document.getElementById('modal-subject').value;
+      const body = document.getElementById('modal-body').value;
+      try {
+        await api(`/api/admin/leads/${currentLeadId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'approved', email_subject: subject, email_body: body }),
+        });
+        await api(`/api/admin/leads/${currentLeadId}/send`, { method: 'POST' });
+        toast('Approved and sent via Instantly!');
+        closeModal();
+        loadLeads(currentOffset);
+        loadStats();
+      } catch (e) {
+        toast('Send failed: ' + e.message, 'error');
+      }
+    }
+
+    async function rejectFromModal() {
+      if (!currentLeadId) return;
+      try {
+        await api(`/api/admin/leads/${currentLeadId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'rejected' }),
+        });
+        toast('Lead rejected');
+        closeModal();
+        loadLeads(currentOffset);
+        loadStats();
+      } catch (e) {
+        toast('Reject failed: ' + e.message, 'error');
       }
     }
 
@@ -263,40 +912,15 @@
       currentLeadId = null;
     }
 
-    async function approveLead() {
-      if (!currentLeadId) return;
-      try {
-        await api(`/api/admin/leads/${currentLeadId}/send`, { method: 'POST' });
-        flash('Lead approved and staged for outreach!');
-        closeModal();
-        loadLeads(); loadStats();
-      } catch(e) {
-        flash('Failed to approve lead', 'error');
-      }
-    }
-
-    async function rejectLead() {
-      if (!currentLeadId) return;
-      try {
-        await api(`/api/admin/leads/${currentLeadId}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ status: 'rejected' })
-        });
-        flash('Lead rejected');
-        closeModal();
-        loadLeads(); loadStats();
-      } catch(e) {
-        flash('Failed to reject lead', 'error');
-      }
-    }
-
+    // ---- QUICK ROW ACTIONS ----
     async function quickApprove(id) {
       try {
         await api(`/api/admin/leads/${id}/send`, { method: 'POST' });
-        flash('Lead approved! ✓');
-        loadLeads(); loadStats();
-      } catch(e) {
-        flash('Failed to approve', 'error');
+        toast('Lead approved & sent!');
+        loadLeads(currentOffset);
+        loadStats();
+      } catch (e) {
+        toast('Approve failed: ' + e.message, 'error');
       }
     }
 
@@ -304,39 +928,64 @@
       try {
         await api(`/api/admin/leads/${id}`, {
           method: 'PATCH',
-          body: JSON.stringify({ status: 'rejected' })
+          body: JSON.stringify({ status: 'rejected' }),
         });
-        flash('Lead rejected');
-        loadLeads(); loadStats();
-      } catch(e) {
-        flash('Failed to reject', 'error');
+        toast('Lead rejected');
+        loadLeads(currentOffset);
+        loadStats();
+      } catch (e) {
+        toast('Reject failed: ' + e.message, 'error');
       }
     }
 
-    async function discoverLeads() {
-      flash('Discovery triggered — check back in 2 minutes', 'success');
-      // This would trigger a Cloud Run job or call to run discovery
-      alert('Lead discovery runs via cron or manual script. Run: python3 discover.py --city "Miami" --state "FL" --category primary_care --max 10');
+    // ---- DISCOVER ----
+    function toggleDiscover() {
+      const panel = document.getElementById('discover-panel');
+      panel.classList.toggle('open');
+    }
+    document.getElementById('discover-toggle-btn').addEventListener('click', toggleDiscover);
+
+    async function launchDiscovery() {
+      const city     = document.getElementById('d-city').value.trim();
+      const state    = document.getElementById('d-state').value.trim();
+      const category = document.getElementById('d-category').value;
+      const max      = parseInt(document.getElementById('d-max').value, 10) || 10;
+
+      if (!city || !state) { toast('City and state are required', 'error'); return; }
+
+      try {
+        await api('/api/admin/discover', {
+          method: 'POST',
+          body: JSON.stringify({ city, state, category, max }),
+        });
+        toast(`Discovery started: ${category.replace(/_/g, ' ')} in ${city}, ${state}`, 'info');
+        toggleDiscover();
+        setTimeout(() => { loadStats(); loadLeads(0); }, 4000);
+      } catch (e) {
+        toast('Discovery failed: ' + e.message, 'error');
+      }
     }
 
-    function refreshData() {
-      loadLeads();
+    // ---- REFRESH / SEARCH ----
+    function refreshAll() {
       loadStats();
+      loadLeads(0);
     }
 
     function debounceSearch() {
       clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => loadLeads(), 300);
+      searchTimeout = setTimeout(() => loadLeads(0), 320);
     }
 
-    function esc(s) {
-      if (!s) return '';
-      const d = document.createElement('div');
-      d.textContent = s;
-      return d.innerHTML;
-    }
+    // ---- MODAL CLOSE ON OVERLAY CLICK / ESC ----
+    document.getElementById('email-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeModal();
+    });
 
-    // Init
+    // ---- INIT ----
     loadStats();
     loadLeads();
   </script>

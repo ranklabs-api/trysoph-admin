@@ -4,223 +4,906 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sophia AI — Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; }
-    .nav { background: #111118; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; }
-    .nav-logo { font-size: 1.25rem; font-weight: 700; background: linear-gradient(135deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .nav-links { display: flex; gap: 1.5rem; }
-    .nav-links a { color: #94a3b8; text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
-    .nav-links a:hover, .nav-links a.active { color: #e0e0e0; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-    .stat-card { background: #111118; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 1.25rem; }
-    .stat-value { font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .stat-label { color: #64748b; font-size: 0.8rem; margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: #c0c0d0; }
-    .lead-card { background: #111118; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 1.25rem; margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 1rem; transition: border-color 0.2s; }
-    .lead-card:hover { border-color: rgba(255,255,255,0.12); }
-    .lead-check { margin-top: 2px; }
-    .lead-check input { width: 16px; height: 16px; accent-color: #a78bfa; }
-    .lead-info { flex: 1; min-width: 0; }
-    .lead-name { font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem; }
-    .lead-meta { font-size: 0.8rem; color: #64748b; display: flex; gap: 1rem; flex-wrap: wrap; }
-    .lead-meta span { display: flex; align-items: center; gap: 0.25rem; }
-    .lead-email { color: #60a5fa; font-size: 0.85rem; margin-top: 0.25rem; }
-    .lead-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
-    .btn { padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
-    .btn-approve { background: linear-gradient(135deg, #5CBF86, #3a9d5d); color: white; }
-    .btn-approve:hover { opacity: 0.9; }
-    .btn-reject { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
-    .btn-reject:hover { background: rgba(239,68,68,0.25); }
-    .btn-email { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
-    .btn-email:hover { background: rgba(96,165,250,0.25); }
-    .btn-outline { background: transparent; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); }
-    .btn-outline:hover { border-color: rgba(255,255,255,0.2); color: #e0e0e0; }
-    .filters { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-    .filter-select { background: #111118; border: 1px solid rgba(255,255,255,0.08); color: #e0e0e0; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.85rem; cursor: pointer; }
-    .badge { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 600; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #07070d;
+      --surface: #0f0f1a;
+      --surface2: #13131f;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --text: #e2e2f0;
+      --muted: #5a5a7a;
+      --muted2: #8888aa;
+      --accent: #a78bfa;
+      --accent2: #60a5fa;
+      --green: #34d399;
+      --red: #f87171;
+      --amber: #fbbf24;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ---- HEADER ---- */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(8px);
+    }
+    .logo {
+      font-size: 1.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+    }
+    .header-right { display: flex; gap: 0.625rem; align-items: center; }
+
+    /* ---- BUTTONS ---- */
+    .btn {
+      padding: 0.45rem 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: all 0.18s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+    }
+    .btn-primary { background: linear-gradient(135deg, #7c3aed, #3b82f6); color: #fff; }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-success { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.25); }
+    .btn-success:hover { background: rgba(52,211,153,0.25); }
+    .btn-danger { background: rgba(248,113,113,0.12); color: var(--red); border: 1px solid rgba(248,113,113,0.22); }
+    .btn-danger:hover { background: rgba(248,113,113,0.22); }
+    .btn-blue { background: rgba(96,165,250,0.12); color: var(--accent2); border: 1px solid rgba(96,165,250,0.22); }
+    .btn-blue:hover { background: rgba(96,165,250,0.22); }
+    .btn-outline { background: transparent; border: 1px solid var(--border2); color: var(--muted2); }
+    .btn-outline:hover { border-color: rgba(255,255,255,0.22); color: var(--text); }
+    .btn-ghost { background: transparent; border: none; color: var(--muted2); }
+    .btn-ghost:hover { color: var(--text); }
+    .btn-sm { padding: 0.3rem 0.65rem; font-size: 0.72rem; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+
+    /* ---- MAIN LAYOUT ---- */
+    .main { max-width: 1320px; margin: 0 auto; padding: 2rem; }
+
+    /* ---- STAT CARDS ---- */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .stat-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-val {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+      min-height: 2.2rem;
+    }
+    .stat-lbl { font-size: 0.72rem; color: var(--muted); margin-top: 0.4rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat-delta { font-size: 0.72rem; color: var(--green); margin-top: 0.25rem; }
+
+    /* ---- CHARTS ROW ---- */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 900px) { .charts-row { grid-template-columns: 1fr; } }
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+    }
+    .chart-title { font-size: 0.8rem; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem; }
+    .chart-canvas-wrap { position: relative; height: 180px; }
+
+    /* Funnel */
+    .funnel { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
+    .funnel-row { display: flex; align-items: center; gap: 0.75rem; }
+    .funnel-bar-wrap { flex: 1; background: rgba(255,255,255,0.05); border-radius: 4px; height: 28px; overflow: hidden; }
+    .funnel-bar {
+      height: 100%;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding-left: 0.6rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #fff;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 0%;
+    }
+    .funnel-label { font-size: 0.72rem; color: var(--muted2); width: 70px; text-align: right; text-transform: uppercase; letter-spacing: 0.04em; }
+    .funnel-count { font-size: 0.8rem; font-weight: 700; width: 36px; text-align: right; color: var(--text); }
+    .funnel-bar-new { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+    .funnel-bar-approved { background: linear-gradient(90deg, #059669, #34d399); }
+    .funnel-bar-sent { background: linear-gradient(90deg, #1d4ed8, #60a5fa); }
+    .funnel-bar-rejected { background: linear-gradient(90deg, #991b1b, #f87171); }
+
+    /* Top cities list */
+    .cities-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
+    .city-row { display: flex; align-items: center; gap: 0.625rem; }
+    .city-name { font-size: 0.8rem; width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .city-bar-wrap { flex: 1; background: rgba(255,255,255,0.05); border-radius: 3px; height: 10px; }
+    .city-bar {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 0%;
+    }
+    .city-count { font-size: 0.72rem; color: var(--muted2); width: 24px; text-align: right; }
+
+    /* ---- DISCOVER PANEL ---- */
+    .discover-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem;
+      display: none;
+    }
+    .discover-panel.open { display: block; }
+    .discover-panel h3 { font-size: 0.9rem; color: var(--muted2); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .discover-form { display: flex; gap: 0.625rem; flex-wrap: wrap; align-items: flex-end; }
+    .discover-form .field { display: flex; flex-direction: column; gap: 0.25rem; }
+    .discover-form label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .discover-form input, .discover-form select {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 0.45rem 0.75rem;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      min-width: 110px;
+    }
+    .discover-form input:focus, .discover-form select:focus { outline: none; border-color: var(--accent); }
+
+    /* ---- FILTERS ---- */
+    .leads-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .filters { display: flex; gap: 0.625rem; flex-wrap: wrap; align-items: center; }
+    .filter-select, .filter-input {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 0.45rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+    }
+    .filter-input { min-width: 200px; }
+    .filter-input::placeholder { color: var(--muted); }
+    .filter-select:focus, .filter-input:focus { outline: none; border-color: var(--accent); }
+
+    /* ---- TABLE ---- */
+    .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; background: var(--surface); }
+    th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      color: var(--muted2);
+      font-weight: 600;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background 0.12s; }
+    tbody tr:hover { background: var(--surface2); }
+    .lead-name { font-weight: 600; color: #f0f0fc; }
+    .lead-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.15rem; }
+    .badge {
+      display: inline-block;
+      padding: 0.18rem 0.5rem;
+      border-radius: 5px;
+      font-size: 0.67rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
     .badge-new { background: rgba(167,139,250,0.15); color: #a78bfa; }
-    .badge-approved { background: rgba(92,191,134,0.15); color: #5CBF86; }
-    .badge-sent { background: rgba(96,165,250,0.15); color: #60a5fa; }
-    .badge-rejected { background: rgba(239,68,68,0.1); color: #ef4444; }
-    .star { color: #f59e0b; }
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; }
+    .badge-approved { background: rgba(52,211,153,0.12); color: #34d399; }
+    .badge-sent { background: rgba(96,165,250,0.12); color: #60a5fa; }
+    .badge-rejected { background: rgba(248,113,113,0.1); color: #f87171; }
+    .badge-contacted { background: rgba(251,191,36,0.12); color: #fbbf24; }
+    .stars { color: var(--amber); font-size: 0.75rem; }
+
+    /* ---- LOADING / EMPTY ---- */
+    .loading { text-align: center; padding: 3rem; color: var(--muted); }
+    .spinner {
+      display: inline-block;
+      width: 20px; height: 20px;
+      border: 2.5px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty { text-align: center; padding: 4rem; color: var(--muted); font-size: 1rem; }
+
+    /* ---- PAGINATION ---- */
+    .pagination {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem 0 0;
+      align-items: center;
+      justify-content: center;
+    }
+    .pagination span { color: var(--muted2); font-size: 0.8rem; }
+
+    /* ---- EMAIL MODAL ---- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      backdrop-filter: blur(4px);
+    }
     .modal-overlay.active { display: flex; }
-    .modal { background: #111118; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 2rem; max-width: 650px; width: 90%; max-height: 80vh; overflow-y: auto; }
-    .modal h3 { margin-bottom: 1rem; }
-    .modal-email-to { color: #64748b; font-size: 0.85rem; margin-bottom: 1rem; }
-    .modal-email-body { background: #0a0a0f; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 1rem; font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap; color: #c0c0d0; }
-    .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; justify-content: flex-end; }
-    .loading { text-align: center; padding: 3rem; color: #64748b; }
-    .toast { position: fixed; bottom: 2rem; right: 2rem; background: #5CBF86; color: white; padding: 0.75rem 1.25rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600; z-index: 300; animation: slideUp 0.3s ease; }
-    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 18px;
+      padding: 2rem;
+      max-width: 680px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: popIn 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes popIn { from { transform: scale(0.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.25rem; gap: 1rem; }
+    .modal-title { font-size: 1.1rem; font-weight: 700; color: #f0f0fc; }
+    .modal-lead-meta { font-size: 0.75rem; color: var(--muted2); margin-top: 0.25rem; }
+    .modal .field { margin-bottom: 1rem; }
+    .modal .field label { display: block; font-size: 0.7rem; color: var(--muted); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .modal input[type="text"] {
+      width: 100%;
+      background: #0a0a14;
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 0.6rem 0.875rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-family: inherit;
+    }
+    .modal input[type="text"]:focus, .modal textarea:focus { outline: none; border-color: var(--accent); }
+    .modal textarea {
+      width: 100%;
+      min-height: 220px;
+      background: #0a0a14;
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 0.875rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      font-family: inherit;
+      resize: vertical;
+    }
+    .modal-actions { display: flex; gap: 0.625rem; justify-content: flex-end; margin-top: 1.5rem; flex-wrap: wrap; }
+    .modal-spinner { display: none; }
+    .modal-spinner.active { display: inline-block; }
+
+    /* ---- TOAST ---- */
+    .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 999; display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none; }
+    .toast {
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      animation: toastIn 0.25s ease;
+      pointer-events: all;
+      max-width: 320px;
+      backdrop-filter: blur(8px);
+    }
+    .toast-success { background: rgba(52,211,153,0.9); color: #003322; }
+    .toast-error { background: rgba(248,113,113,0.9); color: #330000; }
+    .toast-info { background: rgba(96,165,250,0.9); color: #001a33; }
+    @keyframes toastIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* ---- COUNT-UP ANIMATION ---- */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .stat-card { animation: fadeUp 0.4s ease both; }
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.10s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+    .stat-card:nth-child(4) { animation-delay: 0.20s; }
+    .stat-card:nth-child(5) { animation-delay: 0.25s; }
+    .stat-card:nth-child(6) { animation-delay: 0.30s; }
   </style>
 </head>
 <body>
-  <nav class="nav">
-    <span class="nav-logo">Sophia AI Admin</span>
-    <div class="nav-links">
-      <a href="#" class="active" onclick="setStatus('new')">New Leads</a>
-      <a href="#" onclick="setStatus('approved')">Approved</a>
-      <a href="#" onclick="setStatus('sent')">Sent</a>
-      <a href="#" onclick="setStatus('rejected')">Rejected</a>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">Sophia AI Admin</div>
+    <div class="header-right">
+      <button class="btn btn-primary" id="discover-toggle-btn">&#128270; Discover</button>
+      <button class="btn btn-outline" onclick="refreshAll()">&#8635; Refresh</button>
     </div>
-  </nav>
+  </header>
 
-  <div class="container">
-    <div class="stats" id="stats"></div>
+  <div class="main">
 
-    <div class="filters">
-      <select class="filter-select" id="filter-category" onchange="loadLeads()">
-        <option value="">All Categories</option>
-        <option value="primary_care">Primary Care</option>
-        <option value="dental">Dental</option>
-        <option value="mental_health">Mental Health</option>
-        <option value="urgent_care">Urgent Care</option>
-      </select>
-      <select class="filter-select" id="filter-city" onchange="loadLeads()">
-        <option value="">All Cities</option>
-      </select>
+    <!-- Stat Cards -->
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-val" id="s-total">—</div><div class="stat-lbl">Total Leads</div></div>
+      <div class="stat-card"><div class="stat-val" id="s-new">—</div><div class="stat-lbl">New</div></div>
+      <div class="stat-card"><div class="stat-val" id="s-approved">—</div><div class="stat-lbl">Approved</div></div>
+      <div class="stat-card"><div class="stat-val" id="s-sent">—</div><div class="stat-lbl">Sent</div></div>
+      <div class="stat-card"><div class="stat-val" id="s-sessions">—</div><div class="stat-lbl">Discovery Sessions</div></div>
+      <div class="stat-card"><div class="stat-val" id="s-cities">—</div><div class="stat-lbl">Top Cities</div></div>
     </div>
 
-    <div class="section-title" id="section-label">New Leads</div>
-    <div id="leads-container"></div>
-  </div>
+    <!-- Charts Row -->
+    <div class="charts-row">
+      <!-- Pipeline Funnel -->
+      <div class="chart-card">
+        <div class="chart-title">Pipeline Funnel</div>
+        <div class="funnel" id="funnel">
+          <div class="funnel-row">
+            <div class="funnel-label">New</div>
+            <div class="funnel-bar-wrap"><div class="funnel-bar funnel-bar-new" id="funnel-new">0</div></div>
+            <div class="funnel-count" id="funnel-new-count">0</div>
+          </div>
+          <div class="funnel-row">
+            <div class="funnel-label">Approved</div>
+            <div class="funnel-bar-wrap"><div class="funnel-bar funnel-bar-approved" id="funnel-approved">0</div></div>
+            <div class="funnel-count" id="funnel-approved-count">0</div>
+          </div>
+          <div class="funnel-row">
+            <div class="funnel-label">Sent</div>
+            <div class="funnel-bar-wrap"><div class="funnel-bar funnel-bar-sent" id="funnel-sent">0</div></div>
+            <div class="funnel-count" id="funnel-sent-count">0</div>
+          </div>
+          <div class="funnel-row">
+            <div class="funnel-label">Rejected</div>
+            <div class="funnel-bar-wrap"><div class="funnel-bar funnel-bar-rejected" id="funnel-rejected">0</div></div>
+            <div class="funnel-count" id="funnel-rejected-count">0</div>
+          </div>
+        </div>
+      </div>
 
-  <!-- Email Preview Modal -->
+      <!-- By Category Donut -->
+      <div class="chart-card">
+        <div class="chart-title">By Category</div>
+        <div class="chart-canvas-wrap">
+          <canvas id="chart-category"></canvas>
+        </div>
+      </div>
+
+      <!-- Top Cities -->
+      <div class="chart-card">
+        <div class="chart-title">Top Cities</div>
+        <div class="cities-list" id="cities-list">
+          <div style="color:var(--muted);font-size:0.8rem;padding-top:0.5rem">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Discover Panel -->
+    <div class="discover-panel" id="discover-panel">
+      <h3>&#128270; Launch Discovery</h3>
+      <div class="discover-form">
+        <div class="field">
+          <label>City</label>
+          <input type="text" id="d-city" placeholder="e.g. Miami" value="Miami">
+        </div>
+        <div class="field">
+          <label>State</label>
+          <input type="text" id="d-state" placeholder="e.g. FL" value="FL" style="min-width:70px;max-width:80px">
+        </div>
+        <div class="field">
+          <label>Category</label>
+          <select id="d-category">
+            <option value="primary_care">Primary Care</option>
+            <option value="family_medicine">Family Medicine</option>
+            <option value="cardiology">Cardiology</option>
+            <option value="dermatology">Dermatology</option>
+            <option value="orthopedics">Orthopedics</option>
+            <option value="pediatrics">Pediatrics</option>
+            <option value="obgyn">OB/GYN</option>
+            <option value="mental_health">Mental Health</option>
+            <option value="urgent_care">Urgent Care</option>
+            <option value="dental">Dental</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Max Leads</label>
+          <input type="text" id="d-max" value="10" style="max-width:70px">
+        </div>
+        <button class="btn btn-primary" onclick="launchDiscovery()">&#9654; Start</button>
+        <button class="btn btn-ghost" onclick="toggleDiscover()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Leads Section -->
+    <div class="leads-header">
+      <div class="filters">
+        <select class="filter-select" id="filter-status" onchange="loadLeads()">
+          <option value="">All Status</option>
+          <option value="new" selected>New</option>
+          <option value="approved">Approved</option>
+          <option value="sent">Sent</option>
+          <option value="rejected">Rejected</option>
+          <option value="contacted">Contacted</option>
+        </select>
+        <select class="filter-select" id="filter-category" onchange="loadLeads()">
+          <option value="">All Categories</option>
+          <option value="primary_care">Primary Care</option>
+          <option value="family_medicine">Family Medicine</option>
+          <option value="cardiology">Cardiology</option>
+          <option value="dermatology">Dermatology</option>
+          <option value="orthopedics">Orthopedics</option>
+          <option value="pediatrics">Pediatrics</option>
+          <option value="obgyn">OB/GYN</option>
+          <option value="mental_health">Mental Health</option>
+          <option value="urgent_care">Urgent Care</option>
+          <option value="dental">Dental</option>
+        </select>
+        <input class="filter-input" id="filter-search" placeholder="Search name, email, city…" oninput="debounceSearch()">
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Business</th>
+            <th>Location</th>
+            <th>Contact</th>
+            <th>Rating</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="leads-body">
+          <tr><td colspan="6" class="loading"><span class="spinner"></span> Loading leads…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" id="pagination"></div>
+
+  </div><!-- /main -->
+
+  <!-- Email Modal -->
   <div class="modal-overlay" id="email-modal">
     <div class="modal">
-      <h3>Email Preview</h3>
-      <div class="modal-email-to" id="modal-to"></div>
-      <div class="modal-email-body" id="modal-body"></div>
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">&#128140; Email Draft</div>
+          <div class="modal-lead-meta" id="modal-lead-meta"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal()" title="Close">&#10005;</button>
+      </div>
+      <div id="modal-loading" class="loading" style="padding:2rem 0;display:none">
+        <span class="spinner"></span> Generating AI draft…
+      </div>
+      <div id="modal-content">
+        <div class="field">
+          <label>To</label>
+          <div style="font-size:0.85rem;color:var(--muted2)" id="modal-to">—</div>
+        </div>
+        <div class="field">
+          <label>Subject</label>
+          <input type="text" id="modal-subject" placeholder="Email subject">
+        </div>
+        <div class="field">
+          <label>Body</label>
+          <textarea id="modal-body" placeholder="Email body"></textarea>
+        </div>
+      </div>
       <div class="modal-actions">
-        <button class="btn btn-outline" onclick="closeModal()">Close</button>
-        <button class="btn btn-approve" id="modal-approve-btn" onclick="approveFromModal()">Approve &amp; Stage</button>
+        <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
+        <button class="btn btn-blue btn-sm" onclick="regenerateEmail()">&#128260; Regenerate</button>
+        <button class="btn btn-outline btn-sm" onclick="saveDraft()">&#128190; Save Draft</button>
+        <button class="btn btn-danger btn-sm" onclick="rejectFromModal()">&#10005; Reject</button>
+        <button class="btn btn-success" onclick="approveAndSend()">&#10003; Approve &amp; Send</button>
       </div>
     </div>
   </div>
 
-  <script>
-    const API = 'https://sophiaprovider.com';
-    let currentStatus = 'new';
-    let currentLeadId = null;
+  <!-- Toast container -->
+  <div class="toast-container" id="toast-container"></div>
 
+  <script>
+    // ---- CONFIG ----
+    const API_BASE = 'https://sophiaprovider.com';
+    const AUTH = 'Bearer sophia-admin-6f8a2c1b4d9e';
+
+    // ---- STATE ----
+    let currentLeadId = null;
+    let currentOffset = 0;
+    let searchTimeout = null;
+    let categoryChart = null;
+
+    // ---- API HELPER ----
     async function api(path, opts = {}) {
-      const res = await fetch(API + path, {
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer aba65f14e09a562cf86535b3ba20dd7ae1c2132e1aaa99287d47f17ac28ada71', ...opts.headers },
+      const res = await fetch(`${API_BASE}${path}`, {
+        headers: {
+          'Authorization': AUTH,
+          'Content-Type': 'application/json',
+          ...(opts.headers || {}),
+        },
         ...opts,
       });
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(`HTTP ${res.status}: ${text.slice(0, 120)}`);
+      }
       return res.json();
     }
 
-    async function loadStats() {
-      const data = await api('/api/stats');
-      const sc = data.status_counts || {};
-      document.getElementById('stats').innerHTML = `
-        <div class="stat-card"><div class="stat-value">${sc.new || 0}</div><div class="stat-label">New Leads</div></div>
-        <div class="stat-card"><div class="stat-value">${sc.approved || 0}</div><div class="stat-label">Approved</div></div>
-        <div class="stat-card"><div class="stat-value">${sc.sent || 0}</div><div class="stat-label">Sent</div></div>
-        <div class="stat-card"><div class="stat-value">${data.discovery_sessions || 0}</div><div class="stat-label">Discovery Sessions</div></div>
-      `;
+    // ---- TOAST ----
+    function toast(msg, type = 'success') {
+      const el = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      el.textContent = msg;
+      document.getElementById('toast-container').appendChild(el);
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.3s';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+      }, 3200);
     }
 
-    async function loadLeads() {
-      document.getElementById('leads-container').innerHTML = '<div class="loading">Loading leads...</div>';
-      const city = document.getElementById('filter-city').value;
-      const category = document.getElementById('filter-category').value;
-      let url = `/api/leads?status=${currentStatus}&limit=50`;
-      if (city) url += `&city=${encodeURIComponent(city)}`;
-      if (category) url += `&category=${encodeURIComponent(category)}`;
+    // ---- ESCAPE ----
+    function esc(s) {
+      if (s == null) return '';
+      const d = document.createElement('div');
+      d.textContent = String(s);
+      return d.innerHTML;
+    }
 
-      const data = await api(url);
-      const leads = data.leads || [];
-      
-      if (!leads.length) {
-        document.getElementById('leads-container').innerHTML = '<div class="loading">No leads found</div>';
-        return;
+    // ---- COUNT-UP ----
+    function countUp(el, target, duration = 900) {
+      const start = performance.now();
+      const from = parseInt(el.textContent) || 0;
+      const num = parseInt(target) || 0;
+      if (from === num) { el.textContent = num; return; }
+      function step(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(from + (num - from) * ease);
+        if (progress < 1) requestAnimationFrame(step);
       }
+      requestAnimationFrame(step);
+    }
 
-      let cities = new Set();
-      document.getElementById('leads-container').innerHTML = leads.map(l => {
-        cities.add(l.city);
-        let statusBadge = '';
-        if (l.status === 'new') statusBadge = '<span class="badge badge-new">NEW</span>';
-        else if (l.status === 'approved') statusBadge = '<span class="badge badge-approved">APPROVED</span>';
-        else if (l.status === 'sent') statusBadge = '<span class="badge badge-sent">SENT</span>';
-        
-        let stars = l.google_rating ? `<span class="star">★ ${l.google_rating}</span> (${l.google_review_count})` : '';
-        let email = l.email ? `<div class="lead-email">✉ ${l.email}</div>` : '<div class="lead-email" style="color:#ef4444">⚠ No email</div>';
-        let category = l.category ? l.category.replace('_', ' ') : '';
-        let address = [l.city, l.state].filter(Boolean).join(', ');
-        let phone = l.phone ? `📞 ${l.phone}` : '';
-        
-        let actions = '';
-        if (l.status === 'new') {
-          actions = `
-            <button class="btn btn-email" onclick="previewEmail('${l.id}')">Preview</button>
-            <button class="btn btn-approve" onclick="approveLead('${l.id}')">Approve</button>
-            <button class="btn btn-reject" onclick="rejectLead('${l.id}')">Reject</button>
-          `;
+    // ---- STATS + CHARTS ----
+    async function loadStats() {
+      try {
+        const d = await api('/api/admin/stats');
+        const sc = d.status_counts || {};
+
+        countUp(document.getElementById('s-total'), d.total_leads || 0);
+        countUp(document.getElementById('s-new'), sc.new || 0);
+        countUp(document.getElementById('s-approved'), sc.approved || 0);
+        countUp(document.getElementById('s-sent'), sc.sent || 0);
+        countUp(document.getElementById('s-sessions'), d.discovery_sessions || 0);
+        countUp(document.getElementById('s-cities'), (d.top_cities || []).length);
+
+        // Funnel
+        const total = d.total_leads || 1;
+        const funnelData = [
+          { key: 'new',      val: sc.new || 0 },
+          { key: 'approved', val: sc.approved || 0 },
+          { key: 'sent',     val: sc.sent || 0 },
+          { key: 'rejected', val: sc.rejected || 0 },
+        ];
+        funnelData.forEach(({ key, val }) => {
+          const bar = document.getElementById(`funnel-${key}`);
+          const cnt = document.getElementById(`funnel-${key}-count`);
+          if (bar) {
+            bar.textContent = val;
+            setTimeout(() => { bar.style.width = Math.max(4, Math.round((val / total) * 100)) + '%'; }, 80);
+          }
+          if (cnt) cnt.textContent = val;
+        });
+
+        // By-category donut
+        const cats = (d.by_category || []).slice(0, 8);
+        if (cats.length) {
+          const labels = cats.map(c => (c.category || 'Other').replace(/_/g, ' '));
+          const values = cats.map(c => c.count || 0);
+          const palette = ['#a78bfa','#60a5fa','#34d399','#fbbf24','#f87171','#c084fc','#38bdf8','#fb923c'];
+          if (categoryChart) categoryChart.destroy();
+          categoryChart = new Chart(document.getElementById('chart-category').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+              labels,
+              datasets: [{ data: values, backgroundColor: palette, borderWidth: 0, hoverOffset: 6 }],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              cutout: '68%',
+              plugins: {
+                legend: {
+                  position: 'right',
+                  labels: { color: '#8888aa', font: { size: 10 }, boxWidth: 10, padding: 8 },
+                },
+                tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}` } },
+              },
+            },
+          });
+        } else {
+          document.getElementById('chart-category').parentElement.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding-top:0.5rem">No category data yet</div>';
         }
 
-        return `
-          <div class="lead-card">
-            <div class="lead-info">
-              <div class="lead-name">${l.business_name} ${statusBadge}</div>
-              <div class="lead-meta">
-                <span>📍 ${address}</span>
-                <span>🏥 ${category}</span>
-                ${stars ? `<span>${stars}</span>` : ''}
-                ${phone ? `<span>${phone}</span>` : ''}
+        // Top cities
+        const cities = (d.top_cities || []).slice(0, 6);
+        if (cities.length) {
+          const maxCount = Math.max(...cities.map(c => c.count || 0), 1);
+          document.getElementById('cities-list').innerHTML = cities.map(c => `
+            <div class="city-row">
+              <div class="city-name" title="${esc(c.city)}, ${esc(c.state)}">${esc(c.city)}</div>
+              <div class="city-bar-wrap">
+                <div class="city-bar" style="width:0%" data-pct="${Math.round((c.count / maxCount) * 100)}"></div>
               </div>
-              ${email}
+              <div class="city-count">${c.count}</div>
             </div>
-            <div class="lead-actions">${actions}</div>
-          </div>
-        `;
-      }).join('');
+          `).join('');
+          // animate city bars after a tick
+          setTimeout(() => {
+            document.querySelectorAll('.city-bar').forEach(b => {
+              b.style.transition = 'width 1s cubic-bezier(0.4,0,0.2,1)';
+              b.style.width = b.dataset.pct + '%';
+            });
+          }, 80);
+        } else {
+          document.getElementById('cities-list').innerHTML = '<div style="color:var(--muted);font-size:0.8rem">No city data yet</div>';
+        }
 
-      // Update city filter
-      const citySelect = document.getElementById('filter-city');
-      const currentCity = citySelect.value;
-      citySelect.innerHTML = '<option value="">All Cities</option>' + 
-        [...cities].sort().map(c => `<option value="${c}" ${c === currentCity ? 'selected' : ''}>${c}</option>`).join('');
+      } catch (e) {
+        console.error('Stats error:', e);
+      }
     }
 
-    async function approveLead(id) {
-      await api(`/api/leads/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status: 'approved', approved_by: 'josiah' }),
-      });
-      showToast('Lead approved!');
-      loadLeads();
-      loadStats();
+    // ---- LEADS TABLE ----
+    async function loadLeads(offset = 0) {
+      currentOffset = offset;
+      const status   = document.getElementById('filter-status').value;
+      const category = document.getElementById('filter-category').value;
+      const search   = document.getElementById('filter-search').value.trim();
+
+      let url = `/api/admin/leads?limit=20&offset=${offset}`;
+      if (status)   url += `&status=${encodeURIComponent(status)}`;
+      if (category) url += `&category=${encodeURIComponent(category)}`;
+      if (search)   url += `&search=${encodeURIComponent(search)}`;
+
+      const tbody = document.getElementById('leads-body');
+      tbody.innerHTML = '<tr><td colspan="6" class="loading"><span class="spinner"></span> Loading…</td></tr>';
+
+      try {
+        const data = await api(url);
+        const leads = data.leads || [];
+
+        if (!leads.length) {
+          tbody.innerHTML = '<tr><td colspan="6" class="empty">No leads found</td></tr>';
+          document.getElementById('pagination').innerHTML = '';
+          return;
+        }
+
+        tbody.innerHTML = leads.map(l => {
+          const statusBadge = `<span class="badge badge-${esc(l.status)}">${esc(l.status)}</span>`;
+          const rating = l.google_rating
+            ? `<span class="stars">&#9733; ${l.google_rating}</span> <span style="font-size:0.7rem;color:var(--muted)">(${l.google_review_count || 0})</span>`
+            : '—';
+          const contact = l.email
+            ? `<div style="font-size:0.78rem">&#9993; ${esc(l.email)}</div>${l.phone ? `<div style="font-size:0.72rem;color:var(--muted)">&#128222; ${esc(l.phone)}</div>` : ''}`
+            : `<span style="color:var(--muted);font-size:0.75rem">No email</span>`;
+
+          return `
+            <tr>
+              <td>
+                <div class="lead-name">${esc(l.business_name)}</div>
+                <div class="lead-sub">${esc((l.category || l.organization_type || '').replace(/_/g, ' '))}</div>
+              </td>
+              <td>
+                <div style="font-size:0.82rem">${esc(l.city)}, ${esc(l.state)}</div>
+              </td>
+              <td>${contact}</td>
+              <td>${rating}</td>
+              <td>${statusBadge}</td>
+              <td>
+                <button class="btn btn-blue btn-sm" data-action="preview" data-id="${esc(l.id)}" title="Preview email">&#128140;</button>
+                <button class="btn btn-success btn-sm" data-action="approve" data-id="${esc(l.id)}" title="Quick approve">&#10003;</button>
+                <button class="btn btn-danger btn-sm" data-action="reject" data-id="${esc(l.id)}" title="Quick reject">&#10005;</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        // Pagination
+        const total = data.total || 0;
+        const totalPages = Math.ceil(total / 20);
+        const currentPage = Math.floor(offset / 20) + 1;
+        let pag = '';
+        if (offset > 0) pag += `<button class="btn btn-outline btn-sm" data-action="page" data-offset="${offset - 20}">&#8592; Prev</button>`;
+        pag += `<span>Page ${currentPage} of ${totalPages || 1} &middot; ${total} leads</span>`;
+        if (offset + 20 < total) pag += `<button class="btn btn-outline btn-sm" data-action="page" data-offset="${offset + 20}">Next &#8594;</button>`;
+        document.getElementById('pagination').innerHTML = pag;
+
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" class="loading" style="color:var(--red)">Error: ${esc(e.message)}</td></tr>`;
+      }
     }
 
-    async function rejectLead(id) {
-      const reason = prompt('Rejection reason (optional):');
-      await api(`/api/leads/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status: 'rejected', rejection_reason: reason || '' }),
-      });
-      showToast('Lead rejected');
-      loadLeads();
-      loadStats();
-    }
+    // ---- EVENT DELEGATION for table actions ----
+    document.getElementById('leads-body').addEventListener('click', function(e) {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      if (action === 'preview') previewEmail(id);
+      else if (action === 'approve') quickApprove(id);
+      else if (action === 'reject') quickReject(id);
+    });
 
+    document.getElementById('pagination').addEventListener('click', function(e) {
+      const btn = e.target.closest('button[data-action="page"]');
+      if (!btn) return;
+      loadLeads(parseInt(btn.dataset.offset, 10));
+    });
+
+    // ---- EMAIL MODAL ----
     async function previewEmail(id) {
       currentLeadId = id;
-      const data = await api(`/api/leads/${id}/email`);
-      document.getElementById('modal-to').innerHTML = `<strong>To:</strong> ${data.to}<br><strong>Subject:</strong> ${data.subject}`;
-      document.getElementById('modal-body').textContent = data.body;
+      document.getElementById('modal-lead-meta').textContent = '';
+      document.getElementById('modal-to').textContent = '…';
+      document.getElementById('modal-subject').value = '';
+      document.getElementById('modal-body').value = '';
+      document.getElementById('modal-loading').style.display = 'block';
+      document.getElementById('modal-content').style.opacity = '0.3';
       document.getElementById('email-modal').classList.add('active');
+
+      try {
+        const data = await api(`/api/admin/leads/${id}/email`);
+        document.getElementById('modal-to').textContent = data.to || '—';
+        document.getElementById('modal-subject').value = data.subject || '';
+        document.getElementById('modal-body').value = data.body || '';
+
+        // Show lead context if available
+        const lead = data.lead || {};
+        const meta = [
+          lead.business_name,
+          lead.city && lead.state ? `${lead.city}, ${lead.state}` : (lead.city || ''),
+          lead.phone,
+          lead.website,
+        ].filter(Boolean).join(' · ');
+        document.getElementById('modal-lead-meta').textContent = meta;
+
+      } catch (e) {
+        toast('Failed to load email draft: ' + e.message, 'error');
+        closeModal();
+      } finally {
+        document.getElementById('modal-loading').style.display = 'none';
+        document.getElementById('modal-content').style.opacity = '1';
+      }
     }
 
-    async function approveFromModal() {
-      if (currentLeadId) {
-        await approveLead(currentLeadId);
+    async function regenerateEmail() {
+      if (!currentLeadId) return;
+      document.getElementById('modal-loading').style.display = 'block';
+      document.getElementById('modal-content').style.opacity = '0.35';
+      try {
+        const data = await api(`/api/admin/leads/${currentLeadId}/email/regenerate`, { method: 'POST' });
+        document.getElementById('modal-subject').value = data.subject || '';
+        document.getElementById('modal-body').value = data.body || '';
+        toast('Email regenerated');
+      } catch (e) {
+        toast('Regenerate failed: ' + e.message, 'error');
+      } finally {
+        document.getElementById('modal-loading').style.display = 'none';
+        document.getElementById('modal-content').style.opacity = '1';
+      }
+    }
+
+    async function saveDraft() {
+      if (!currentLeadId) return;
+      const subject = document.getElementById('modal-subject').value;
+      const body = document.getElementById('modal-body').value;
+      try {
+        await api(`/api/admin/leads/${currentLeadId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ email_subject: subject, email_body: body }),
+        });
+        toast('Draft saved');
+      } catch (e) {
+        toast('Save failed: ' + e.message, 'error');
+      }
+    }
+
+    async function approveAndSend() {
+      if (!currentLeadId) return;
+      const subject = document.getElementById('modal-subject').value;
+      const body = document.getElementById('modal-body').value;
+      try {
+        await api(`/api/admin/leads/${currentLeadId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'approved', email_subject: subject, email_body: body }),
+        });
+        await api(`/api/admin/leads/${currentLeadId}/send`, { method: 'POST' });
+        toast('Approved and sent via Instantly!');
         closeModal();
+        loadLeads(currentOffset);
+        loadStats();
+      } catch (e) {
+        toast('Send failed: ' + e.message, 'error');
+      }
+    }
+
+    async function rejectFromModal() {
+      if (!currentLeadId) return;
+      try {
+        await api(`/api/admin/leads/${currentLeadId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'rejected' }),
+        });
+        toast('Lead rejected');
+        closeModal();
+        loadLeads(currentOffset);
+        loadStats();
+      } catch (e) {
+        toast('Reject failed: ' + e.message, 'error');
       }
     }
 
@@ -229,35 +912,82 @@
       currentLeadId = null;
     }
 
-    function setStatus(status) {
-      currentStatus = status;
-      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-      document.querySelectorAll('.nav-links a').forEach(a => {
-        if (a.textContent.toLowerCase().includes(status)) a.classList.add('active');
-      });
-      document.getElementById('section-label').textContent = status.charAt(0).toUpperCase() + status.slice(1) + ' Leads';
-      loadLeads();
+    // ---- QUICK ROW ACTIONS ----
+    async function quickApprove(id) {
+      try {
+        await api(`/api/admin/leads/${id}/send`, { method: 'POST' });
+        toast('Lead approved & sent!');
+        loadLeads(currentOffset);
+        loadStats();
+      } catch (e) {
+        toast('Approve failed: ' + e.message, 'error');
+      }
     }
 
-    function showToast(msg) {
-      const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.textContent = msg;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 2500);
+    async function quickReject(id) {
+      try {
+        await api(`/api/admin/leads/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'rejected' }),
+        });
+        toast('Lead rejected');
+        loadLeads(currentOffset);
+        loadStats();
+      } catch (e) {
+        toast('Reject failed: ' + e.message, 'error');
+      }
     }
 
-    // Init
-    loadStats();
-    loadLeads();
+    // ---- DISCOVER ----
+    function toggleDiscover() {
+      const panel = document.getElementById('discover-panel');
+      panel.classList.toggle('open');
+    }
+    document.getElementById('discover-toggle-btn').addEventListener('click', toggleDiscover);
 
-    // Close modal on overlay click
+    async function launchDiscovery() {
+      const city     = document.getElementById('d-city').value.trim();
+      const state    = document.getElementById('d-state').value.trim();
+      const category = document.getElementById('d-category').value;
+      const max      = parseInt(document.getElementById('d-max').value, 10) || 10;
+
+      if (!city || !state) { toast('City and state are required', 'error'); return; }
+
+      try {
+        await api('/api/admin/discover', {
+          method: 'POST',
+          body: JSON.stringify({ city, state, category, max }),
+        });
+        toast(`Discovery started: ${category.replace(/_/g, ' ')} in ${city}, ${state}`, 'info');
+        toggleDiscover();
+        setTimeout(() => { loadStats(); loadLeads(0); }, 4000);
+      } catch (e) {
+        toast('Discovery failed: ' + e.message, 'error');
+      }
+    }
+
+    // ---- REFRESH / SEARCH ----
+    function refreshAll() {
+      loadStats();
+      loadLeads(0);
+    }
+
+    function debounceSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => loadLeads(0), 320);
+    }
+
+    // ---- MODAL CLOSE ON OVERLAY CLICK / ESC ----
     document.getElementById('email-modal').addEventListener('click', function(e) {
       if (e.target === this) closeModal();
     });
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') closeModal();
     });
+
+    // ---- INIT ----
+    loadStats();
+    loadLeads();
   </script>
 </body>
 </html>
