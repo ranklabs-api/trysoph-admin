@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sophia AI — Admin</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Identity Services — loaded only when OAuth is active (see init logic) -->
+  <script id="gsi-script"></script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -367,14 +369,96 @@
     .stat-card:nth-child(4) { animation-delay: 0.20s; }
     .stat-card:nth-child(5) { animation-delay: 0.25s; }
     .stat-card:nth-child(6) { animation-delay: 0.30s; }
+
+    /* ---- GOOGLE SIGN-IN GATE ---- */
+    #auth-gate {
+      display: none; /* hidden until OAuth is active */
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: var(--bg);
+      background-image: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124,58,237,0.18) 0%, transparent 70%),
+                        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(59,130,246,0.12) 0%, transparent 60%);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    #auth-gate.visible { display: flex; }
+    .gate-card {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      padding: 2.5rem 3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      max-width: 400px;
+      width: 92%;
+      box-shadow: 0 0 60px rgba(124,58,237,0.12);
+    }
+    .gate-logo {
+      font-size: 1.6rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.03em;
+    }
+    .gate-sub {
+      font-size: 0.85rem;
+      color: var(--muted2);
+      text-align: center;
+      line-height: 1.55;
+    }
+    .gate-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+    }
+    .gate-error {
+      font-size: 0.8rem;
+      color: var(--red);
+      text-align: center;
+      min-height: 1.2em;
+    }
+    /* header user pill */
+    .user-pill {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      color: var(--muted2);
+    }
+    .user-pill.visible { display: flex; }
+    .user-email { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   </style>
 </head>
 <body>
+
+  <!-- Google Sign-In Gate (shown only when GOOGLE_OAUTH_CLIENT_ID is configured) -->
+  <div id="auth-gate">
+    <div class="gate-card">
+      <div class="gate-logo">Sophia AI Admin</div>
+      <div class="gate-sub">Sign in with your <strong>@trysoph.com</strong> Google account to continue.</div>
+      <div class="gate-divider"></div>
+      <!-- Google One Tap / button rendered here -->
+      <div id="g-signin-btn"></div>
+      <div class="gate-error" id="gate-error"></div>
+    </div>
+  </div>
 
   <!-- Header -->
   <header class="header">
     <div class="logo">Sophia AI Admin</div>
     <div class="header-right">
+      <!-- User pill — shown when signed in via Google -->
+      <div class="user-pill" id="user-pill">
+        <span class="user-email" id="user-email"></span>
+        <button class="btn btn-outline btn-sm" onclick="signOut()">Sign out</button>
+      </div>
       <button class="btn btn-primary" id="discover-toggle-btn">&#128270; Discover</button>
       <button class="btn btn-outline" onclick="refreshAll()">&#8635; Refresh</button>
     </div>
@@ -566,7 +650,13 @@
   <script>
     // ---- CONFIG ----
     const API_BASE = 'https://sophiaprovider.com';
-    const AUTH = 'Bearer sophia-admin-6f8a2c1b4d9e';
+    // Legacy static bearer — used when Google OAuth is NOT configured.
+    const LEGACY_AUTH = 'Bearer sophia-admin-6f8a2c1b4d9e';
+
+    // ---- AUTH STATE ----
+    // authToken holds the active bearer value — either LEGACY_AUTH or a live
+    // Google ID token. Starts as legacy; overwritten by initAuth() if needed.
+    let authToken = LEGACY_AUTH;
 
     // ---- STATE ----
     let currentLeadId = null;
@@ -578,17 +668,140 @@
     async function api(path, opts = {}) {
       const res = await fetch(`${API_BASE}${path}`, {
         headers: {
-          'Authorization': AUTH,
+          'Authorization': authToken,
           'Content-Type': 'application/json',
           ...(opts.headers || {}),
         },
         ...opts,
       });
       if (!res.ok) {
+        // If Google mode is active and we get a 401, the token has expired —
+        // clear it and show the sign-in gate again.
+        if (res.status === 401 && authToken !== LEGACY_AUTH) {
+          clearGoogleSession();
+          showGate();
+        }
         const text = await res.text().catch(() => '');
         throw new Error(`HTTP ${res.status}: ${text.slice(0, 120)}`);
       }
       return res.json();
+    }
+
+    // ---- GOOGLE OAUTH HELPERS ----
+    function showGate() {
+      document.getElementById('auth-gate').classList.add('visible');
+    }
+    function hideGate() {
+      document.getElementById('auth-gate').classList.remove('visible');
+    }
+    function clearGoogleSession() {
+      authToken = LEGACY_AUTH; // fall back so next api() doesn't cause a redirect loop
+      try { sessionStorage.removeItem('sophia_admin_token'); sessionStorage.removeItem('sophia_admin_email'); } catch (_) {}
+      document.getElementById('user-pill').classList.remove('visible');
+      document.getElementById('user-email').textContent = '';
+    }
+    function signOut() {
+      clearGoogleSession();
+      showGate();
+    }
+    function onGoogleCredential(response) {
+      const idToken = response.credential;
+      // Decode the JWT payload (no verification — server does that)
+      let email = '';
+      try {
+        const payload = JSON.parse(atob(idToken.split('.')[1]));
+        email = payload.email || '';
+        if (!email.endsWith('@trysoph.com')) {
+          document.getElementById('gate-error').textContent = 'Access restricted to @trysoph.com accounts.';
+          return;
+        }
+      } catch (_) {}
+      // Store token
+      authToken = 'Bearer ' + idToken;
+      try {
+        sessionStorage.setItem('sophia_admin_token', idToken);
+        sessionStorage.setItem('sophia_admin_email', email);
+      } catch (_) {}
+      // Show user pill
+      document.getElementById('user-email').textContent = email;
+      document.getElementById('user-pill').classList.add('visible');
+      document.getElementById('gate-error').textContent = '';
+      hideGate();
+      // Load the app
+      loadStats();
+      loadLeads();
+    }
+
+    // ---- BOOT: check auth-config, then either show Google gate or load normally ----
+    async function initAuth() {
+      let googleClientId = '';
+      try {
+        const cfg = await fetch(`${API_BASE}/api/admin/auth-config`).then(r => r.json());
+        googleClientId = (cfg.google_client_id || '').trim();
+      } catch (_) {
+        // Can't reach auth-config — proceed with legacy mode.
+      }
+
+      if (!googleClientId) {
+        // FLAG OFF: legacy bearer mode, load app immediately.
+        loadStats();
+        loadLeads();
+        return;
+      }
+
+      // FLAG ON: Google OAuth mode.
+      // 1. Try to restore session from sessionStorage.
+      let restored = false;
+      try {
+        const savedToken = sessionStorage.getItem('sophia_admin_token');
+        const savedEmail = sessionStorage.getItem('sophia_admin_email');
+        if (savedToken && savedEmail) {
+          // Validate it's still good by decoding exp.
+          const payload = JSON.parse(atob(savedToken.split('.')[1]));
+          if (payload.exp && payload.exp * 1000 > Date.now()) {
+            authToken = 'Bearer ' + savedToken;
+            document.getElementById('user-email').textContent = savedEmail;
+            document.getElementById('user-pill').classList.add('visible');
+            restored = true;
+          } else {
+            sessionStorage.removeItem('sophia_admin_token');
+            sessionStorage.removeItem('sophia_admin_email');
+          }
+        }
+      } catch (_) {}
+
+      if (restored) {
+        loadStats();
+        loadLeads();
+        return;
+      }
+
+      // 2. Load Google Identity Services and show the gate.
+      const gsiScript = document.getElementById('gsi-script');
+      gsiScript.src = 'https://accounts.google.com/gsi/client';
+      gsiScript.async = true;
+      gsiScript.defer = true;
+      gsiScript.onload = () => {
+        google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: onGoogleCredential,
+          auto_select: true,
+        });
+        google.accounts.id.renderButton(
+          document.getElementById('g-signin-btn'),
+          {
+            theme: 'filled_black',
+            size: 'large',
+            shape: 'pill',
+            text: 'signin_with',
+            logo_alignment: 'left',
+            width: 280,
+          }
+        );
+        // Also show One Tap prompt
+        google.accounts.id.prompt();
+      };
+      showGate();
     }
 
     // ---- TOAST ----
@@ -986,8 +1199,10 @@
     });
 
     // ---- INIT ----
-    loadStats();
-    loadLeads();
+    // initAuth() checks the backend's auth-config endpoint and either:
+    // - (flag off) proceeds with the legacy static bearer immediately, OR
+    // - (flag on) shows the Google sign-in gate and loads GSI.
+    initAuth();
   </script>
 </body>
 </html>
