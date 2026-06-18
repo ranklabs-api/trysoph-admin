@@ -537,16 +537,10 @@
         <div class="field">
           <label>Category</label>
           <select id="d-category">
-            <option value="primary_care">Primary Care</option>
-            <option value="family_medicine">Family Medicine</option>
-            <option value="cardiology">Cardiology</option>
-            <option value="dermatology">Dermatology</option>
-            <option value="orthopedics">Orthopedics</option>
-            <option value="pediatrics">Pediatrics</option>
-            <option value="obgyn">OB/GYN</option>
-            <option value="mental_health">Mental Health</option>
-            <option value="urgent_care">Urgent Care</option>
-            <option value="dental">Dental</option>
+            <option value="primary_care" selected>Primary Care</option>
+            <option value="medical_billing">Medical Billing</option>
+            <option value="healthcare_consultant">Healthcare Consultant</option>
+            <option value="staffing_agency">Staffing Agency</option>
           </select>
         </div>
         <div class="field">
@@ -572,15 +566,9 @@
         <select class="filter-select" id="filter-category" onchange="loadLeads()">
           <option value="">All Categories</option>
           <option value="primary_care">Primary Care</option>
-          <option value="family_medicine">Family Medicine</option>
-          <option value="cardiology">Cardiology</option>
-          <option value="dermatology">Dermatology</option>
-          <option value="orthopedics">Orthopedics</option>
-          <option value="pediatrics">Pediatrics</option>
-          <option value="obgyn">OB/GYN</option>
-          <option value="mental_health">Mental Health</option>
-          <option value="urgent_care">Urgent Care</option>
-          <option value="dental">Dental</option>
+          <option value="medical_billing">Medical Billing</option>
+          <option value="healthcare_consultant">Healthcare Consultant</option>
+          <option value="staffing_agency">Staffing Agency</option>
         </select>
         <input class="filter-input" id="filter-search" placeholder="Search name, email, city…" oninput="debounceSearch()">
       </div>
@@ -624,6 +612,10 @@
         <div class="field">
           <label>To</label>
           <div style="font-size:0.85rem;color:var(--muted2)" id="modal-to">—</div>
+        </div>
+        <div class="field">
+          <label>Send As</label>
+          <select id="modal-sender" style="width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:0.45rem 0.65rem;border-radius:8px;font-size:0.85rem;outline:none;"></select>
         </div>
         <div class="field">
           <label>Subject</label>
@@ -730,6 +722,7 @@
       // Load the app
       loadStats();
       loadLeads();
+      loadSenders();
     }
 
     // ---- BOOT: check auth-config, then either show Google gate or load normally ----
@@ -746,6 +739,7 @@
         // FLAG OFF: legacy bearer mode, load app immediately.
         loadStats();
         loadLeads();
+        loadSenders();
         return;
       }
 
@@ -773,6 +767,7 @@
       if (restored) {
         loadStats();
         loadLeads();
+        loadSenders();
         return;
       }
 
@@ -802,6 +797,44 @@
         google.accounts.id.prompt();
       };
       showGate();
+    }
+
+    // ---- SENDER DROPDOWN ----
+    const FALLBACK_SENDERS = [
+      'jeremiah@oursophia.com',
+      'jeremiah@sophiabooking.com',
+      'jeremiah@sophiaprovider.com',
+      'jeremiah@sophiascheduling.com',
+      'jeremiah@sophiateam.com',
+      'jeremiah@trysoph.com',
+    ];
+
+    async function loadSenders() {
+      let senders = FALLBACK_SENDERS.map(a => ({ address: a, connected: true }));
+      try {
+        const data = await api('/api/admin/senders');
+        if (data && Array.isArray(data.senders) && data.senders.length > 0) {
+          senders = data.senders;
+        }
+      } catch (_) {
+        // Endpoint not yet live — use fallback list silently.
+      }
+
+      const preferred = localStorage.getItem('sophia_sender') || 'jeremiah@trysoph.com';
+      const sel = document.getElementById('modal-sender');
+      sel.innerHTML = '';
+      senders.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.address;
+        opt.textContent = s.address + (s.connected === false ? ' (disconnected)' : '');
+        if (s.address === preferred) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      // If preferred wasn't in list, default to jeremiah@trysoph.com if present, else first.
+      if (!sel.value || !senders.find(s => s.address === sel.value)) {
+        const fallbackOpt = sel.querySelector('option[value="jeremiah@trysoph.com"]');
+        if (fallbackOpt) fallbackOpt.selected = true;
+      }
     }
 
     // ---- TOAST ----
@@ -1089,12 +1122,18 @@
       if (!currentLeadId) return;
       const subject = document.getElementById('modal-subject').value;
       const body = document.getElementById('modal-body').value;
+      const senderEl = document.getElementById('modal-sender');
+      const from = senderEl ? senderEl.value : (localStorage.getItem('sophia_sender') || 'jeremiah@trysoph.com');
       try {
         await api(`/api/admin/leads/${currentLeadId}`, {
           method: 'PATCH',
           body: JSON.stringify({ status: 'approved', email_subject: subject, email_body: body }),
         });
-        await api(`/api/admin/leads/${currentLeadId}/send`, { method: 'POST' });
+        await api(`/api/admin/leads/${currentLeadId}/send`, {
+          method: 'POST',
+          body: JSON.stringify({ from }),
+        });
+        localStorage.setItem('sophia_sender', from);
         toast('Approved and sent via Instantly!');
         closeModal();
         loadLeads(currentOffset);
@@ -1127,8 +1166,12 @@
 
     // ---- QUICK ROW ACTIONS ----
     async function quickApprove(id) {
+      const from = localStorage.getItem('sophia_sender') || 'jeremiah@trysoph.com';
       try {
-        await api(`/api/admin/leads/${id}/send`, { method: 'POST' });
+        await api(`/api/admin/leads/${id}/send`, {
+          method: 'POST',
+          body: JSON.stringify({ from }),
+        });
         toast('Lead approved & sent!');
         loadLeads(currentOffset);
         loadStats();
