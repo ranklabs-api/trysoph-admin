@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sophia AI — Admin</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; }
+    .nav { background: #111118; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; }
+    .nav-logo { font-size: 1.25rem; font-weight: 700; background: linear-gradient(135deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a { color: #94a3b8; text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: #e0e0e0; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: #111118; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 1.25rem; }
+    .stat-value { font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .stat-label { color: #64748b; font-size: 0.8rem; margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: #c0c0d0; }
+    .lead-card { background: #111118; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 1.25rem; margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 1rem; transition: border-color 0.2s; }
+    .lead-card:hover { border-color: rgba(255,255,255,0.12); }
+    .lead-check { margin-top: 2px; }
+    .lead-check input { width: 16px; height: 16px; accent-color: #a78bfa; }
+    .lead-info { flex: 1; min-width: 0; }
+    .lead-name { font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem; }
+    .lead-meta { font-size: 0.8rem; color: #64748b; display: flex; gap: 1rem; flex-wrap: wrap; }
+    .lead-meta span { display: flex; align-items: center; gap: 0.25rem; }
+    .lead-email { color: #60a5fa; font-size: 0.85rem; margin-top: 0.25rem; }
+    .lead-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+    .btn { padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+    .btn-approve { background: linear-gradient(135deg, #5CBF86, #3a9d5d); color: white; }
+    .btn-approve:hover { opacity: 0.9; }
+    .btn-reject { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+    .btn-reject:hover { background: rgba(239,68,68,0.25); }
+    .btn-email { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
+    .btn-email:hover { background: rgba(96,165,250,0.25); }
+    .btn-outline { background: transparent; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); }
+    .btn-outline:hover { border-color: rgba(255,255,255,0.2); color: #e0e0e0; }
+    .filters { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .filter-select { background: #111118; border: 1px solid rgba(255,255,255,0.08); color: #e0e0e0; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.85rem; cursor: pointer; }
+    .badge { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 600; }
+    .badge-new { background: rgba(167,139,250,0.15); color: #a78bfa; }
+    .badge-approved { background: rgba(92,191,134,0.15); color: #5CBF86; }
+    .badge-sent { background: rgba(96,165,250,0.15); color: #60a5fa; }
+    .badge-rejected { background: rgba(239,68,68,0.1); color: #ef4444; }
+    .star { color: #f59e0b; }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: #111118; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 2rem; max-width: 650px; width: 90%; max-height: 80vh; overflow-y: auto; }
+    .modal h3 { margin-bottom: 1rem; }
+    .modal-email-to { color: #64748b; font-size: 0.85rem; margin-bottom: 1rem; }
+    .modal-email-body { background: #0a0a0f; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 1rem; font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap; color: #c0c0d0; }
+    .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; justify-content: flex-end; }
+    .loading { text-align: center; padding: 3rem; color: #64748b; }
+    .toast { position: fixed; bottom: 2rem; right: 2rem; background: #5CBF86; color: white; padding: 0.75rem 1.25rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600; z-index: 300; animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <span class="nav-logo">Sophia AI Admin</span>
+    <div class="nav-links">
+      <a href="#" class="active" onclick="setStatus('new')">New Leads</a>
+      <a href="#" onclick="setStatus('approved')">Approved</a>
+      <a href="#" onclick="setStatus('sent')">Sent</a>
+      <a href="#" onclick="setStatus('rejected')">Rejected</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="stats" id="stats"></div>
+
+    <div class="filters">
+      <select class="filter-select" id="filter-category" onchange="loadLeads()">
+        <option value="">All Categories</option>
+        <option value="primary_care">Primary Care</option>
+        <option value="dental">Dental</option>
+        <option value="mental_health">Mental Health</option>
+        <option value="urgent_care">Urgent Care</option>
+      </select>
+      <select class="filter-select" id="filter-city" onchange="loadLeads()">
+        <option value="">All Cities</option>
+      </select>
+    </div>
+
+    <div class="section-title" id="section-label">New Leads</div>
+    <div id="leads-container"></div>
+  </div>
+
+  <!-- Email Preview Modal -->
+  <div class="modal-overlay" id="email-modal">
+    <div class="modal">
+      <h3>Email Preview</h3>
+      <div class="modal-email-to" id="modal-to"></div>
+      <div class="modal-email-body" id="modal-body"></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal()">Close</button>
+        <button class="btn btn-approve" id="modal-approve-btn" onclick="approveFromModal()">Approve &amp; Stage</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'https://sophiaprovider.com';
+    let currentStatus = 'new';
+    let currentLeadId = null;
+
+    async function api(path, opts = {}) {
+      const res = await fetch(API + path, {
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer aba65f14e09a562cf86535b3ba20dd7ae1c2132e1aaa99287d47f17ac28ada71', ...opts.headers },
+        ...opts,
+      });
+      return res.json();
+    }
+
+    async function loadStats() {
+      const data = await api('/api/stats');
+      const sc = data.status_counts || {};
+      document.getElementById('stats').innerHTML = `
+        <div class="stat-card"><div class="stat-value">${sc.new || 0}</div><div class="stat-label">New Leads</div></div>
+        <div class="stat-card"><div class="stat-value">${sc.approved || 0}</div><div class="stat-label">Approved</div></div>
+        <div class="stat-card"><div class="stat-value">${sc.sent || 0}</div><div class="stat-label">Sent</div></div>
+        <div class="stat-card"><div class="stat-value">${data.discovery_sessions || 0}</div><div class="stat-label">Discovery Sessions</div></div>
+      `;
+    }
+
+    async function loadLeads() {
+      document.getElementById('leads-container').innerHTML = '<div class="loading">Loading leads...</div>';
+      const city = document.getElementById('filter-city').value;
+      const category = document.getElementById('filter-category').value;
+      let url = `/api/leads?status=${currentStatus}&limit=50`;
+      if (city) url += `&city=${encodeURIComponent(city)}`;
+      if (category) url += `&category=${encodeURIComponent(category)}`;
+
+      const data = await api(url);
+      const leads = data.leads || [];
+      
+      if (!leads.length) {
+        document.getElementById('leads-container').innerHTML = '<div class="loading">No leads found</div>';
+        return;
+      }
+
+      let cities = new Set();
+      document.getElementById('leads-container').innerHTML = leads.map(l => {
+        cities.add(l.city);
+        let statusBadge = '';
+        if (l.status === 'new') statusBadge = '<span class="badge badge-new">NEW</span>';
+        else if (l.status === 'approved') statusBadge = '<span class="badge badge-approved">APPROVED</span>';
+        else if (l.status === 'sent') statusBadge = '<span class="badge badge-sent">SENT</span>';
+        
+        let stars = l.google_rating ? `<span class="star">★ ${l.google_rating}</span> (${l.google_review_count})` : '';
+        let email = l.email ? `<div class="lead-email">✉ ${l.email}</div>` : '<div class="lead-email" style="color:#ef4444">⚠ No email</div>';
+        let category = l.category ? l.category.replace('_', ' ') : '';
+        let address = [l.city, l.state].filter(Boolean).join(', ');
+        let phone = l.phone ? `📞 ${l.phone}` : '';
+        
+        let actions = '';
+        if (l.status === 'new') {
+          actions = `
+            <button class="btn btn-email" onclick="previewEmail('${l.id}')">Preview</button>
+            <button class="btn btn-approve" onclick="approveLead('${l.id}')">Approve</button>
+            <button class="btn btn-reject" onclick="rejectLead('${l.id}')">Reject</button>
+          `;
+        }
+
+        return `
+          <div class="lead-card">
+            <div class="lead-info">
+              <div class="lead-name">${l.business_name} ${statusBadge}</div>
+              <div class="lead-meta">
+                <span>📍 ${address}</span>
+                <span>🏥 ${category}</span>
+                ${stars ? `<span>${stars}</span>` : ''}
+                ${phone ? `<span>${phone}</span>` : ''}
+              </div>
+              ${email}
+            </div>
+            <div class="lead-actions">${actions}</div>
+          </div>
+        `;
+      }).join('');
+
+      // Update city filter
+      const citySelect = document.getElementById('filter-city');
+      const currentCity = citySelect.value;
+      citySelect.innerHTML = '<option value="">All Cities</option>' + 
+        [...cities].sort().map(c => `<option value="${c}" ${c === currentCity ? 'selected' : ''}>${c}</option>`).join('');
+    }
+
+    async function approveLead(id) {
+      await api(`/api/leads/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'approved', approved_by: 'josiah' }),
+      });
+      showToast('Lead approved!');
+      loadLeads();
+      loadStats();
+    }
+
+    async function rejectLead(id) {
+      const reason = prompt('Rejection reason (optional):');
+      await api(`/api/leads/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'rejected', rejection_reason: reason || '' }),
+      });
+      showToast('Lead rejected');
+      loadLeads();
+      loadStats();
+    }
+
+    async function previewEmail(id) {
+      currentLeadId = id;
+      const data = await api(`/api/leads/${id}/email`);
+      document.getElementById('modal-to').innerHTML = `<strong>To:</strong> ${data.to}<br><strong>Subject:</strong> ${data.subject}`;
+      document.getElementById('modal-body').textContent = data.body;
+      document.getElementById('email-modal').classList.add('active');
+    }
+
+    async function approveFromModal() {
+      if (currentLeadId) {
+        await approveLead(currentLeadId);
+        closeModal();
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('email-modal').classList.remove('active');
+      currentLeadId = null;
+    }
+
+    function setStatus(status) {
+      currentStatus = status;
+      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+      document.querySelectorAll('.nav-links a').forEach(a => {
+        if (a.textContent.toLowerCase().includes(status)) a.classList.add('active');
+      });
+      document.getElementById('section-label').textContent = status.charAt(0).toUpperCase() + status.slice(1) + ' Leads';
+      loadLeads();
+    }
+
+    function showToast(msg) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2500);
+    }
+
+    // Init
+    loadStats();
+    loadLeads();
+
+    // Close modal on overlay click
+    document.getElementById('email-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+</body>
+</html>
