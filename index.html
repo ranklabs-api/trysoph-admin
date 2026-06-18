@@ -5,16 +5,340 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sophia AI — Admin</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #0a0a0f; color: #e0e0e0; }
-    .container { text-align: center; padding: 2rem; }
-    h1 { font-size: 2rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    p { color: #94a3b8; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; }
+    
+    /* Header */
+    .header { background: #111118; border-bottom: 1px solid #1e1e2e; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.25rem; font-weight: 700; background: linear-gradient(135deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .header-actions { display: flex; gap: 1rem; align-items: center; }
+    .btn { padding: 0.5rem 1rem; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; }
+    .btn-primary { background: linear-gradient(135deg, #7c3aed, #3b82f6); color: white; }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-success { background: #059669; color: white; }
+    .btn-danger { background: #dc2626; color: white; }
+    .btn-outline { background: transparent; border: 1px solid #374151; color: #d1d5db; }
+    .btn-outline:hover { border-color: #6b7280; }
+    .btn-sm { padding: 0.25rem 0.75rem; font-size: 0.75rem; }
+
+    /* Stats bar */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; padding: 1.5rem 2rem; }
+    .stat-card { background: #111118; border: 1px solid #1e1e2e; border-radius: 12px; padding: 1rem; }
+    .stat-value { font-size: 1.75rem; font-weight: 700; color: #f9fafb; }
+    .stat-label { font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* Filters */
+    .filters { display: flex; gap: 0.75rem; padding: 0 2rem 1rem; flex-wrap: wrap; }
+    .filter-select, .filter-input { background: #111118; border: 1px solid #1e1e2e; color: #e0e0e0; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.875rem; }
+    .filter-input { min-width: 200px; }
+    .filter-input::placeholder { color: #4b5563; }
+
+    /* Table */
+    .table-wrap { padding: 0 2rem 2rem; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th { text-align: left; padding: 0.75rem; background: #111118; border-bottom: 2px solid #1e1e2e; color: #9ca3af; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    td { padding: 0.75rem; border-bottom: 1px solid #1e1e2e; }
+    tr:hover { background: #111118; }
+    .lead-name { font-weight: 600; color: #f9fafb; }
+    .lead-city { color: #9ca3af; font-size: 0.8rem; }
+    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+    .badge-new { background: #1e3a5f; color: #60a5fa; }
+    .badge-approved { background: #064e3b; color: #34d399; }
+    .badge-rejected { background: #7f1d1d; color: #fca5a5; }
+    .badge-contact { background: #4a1d96; color: #c4b5fd; }
+    .stars { color: #fbbf24; }
+
+    /* Loading */
+    .loading { text-align: center; padding: 3rem; color: #6b7280; }
+    .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid #374151; border-top-color: #7c3aed; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 0.5rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: #111118; border: 1px solid #1e1e2e; border-radius: 16px; padding: 2rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
+    .modal h2 { font-size: 1.25rem; margin-bottom: 1rem; color: #f9fafb; }
+    .modal .field { margin-bottom: 1rem; }
+    .modal .field label { display: block; font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem; text-transform: uppercase; }
+    .modal .field .value { color: #e0e0e0; font-size: 0.9rem; }
+    .modal textarea { width: 100%; min-height: 200px; background: #0a0a0f; border: 1px solid #1e1e2e; color: #e0e0e0; padding: 1rem; border-radius: 8px; font-size: 0.85rem; line-height: 1.6; font-family: inherit; resize: vertical; }
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+
+    /* Flash */
+    .flash { position: fixed; top: 1rem; right: 1rem; padding: 0.75rem 1.25rem; border-radius: 8px; font-size: 0.875rem; z-index: 200; animation: slideIn 0.3s ease; }
+    .flash-success { background: #059669; color: white; }
+    .flash-error { background: #dc2626; color: white; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* Pagination */
+    .pagination { display: flex; gap: 0.5rem; padding: 1rem 2rem; align-items: center; justify-content: center; }
+    .pagination span { color: #9ca3af; font-size: 0.875rem; }
+
+    .empty { text-align: center; padding: 4rem; color: #4b5563; font-size: 1.1rem; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Sophia AI Admin</h1>
-    <p>Portal coming soon. Sign in with your @trysoph.com Google account.</p>
+  <div class="header">
+    <div>
+      <div class="logo">Sophia AI Admin</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="discoverLeads()">🔍 Discover Leads</button>
+      <button class="btn btn-outline" onclick="refreshData()">↻ Refresh</button>
+    </div>
   </div>
+
+  <div class="stats" id="stats">
+    <div class="stat-card"><div class="stat-value" id="stat-total">—</div><div class="stat-label">Total Leads</div></div>
+    <div class="stat-card"><div class="stat-value" id="stat-new">—</div><div class="stat-label">New</div></div>
+    <div class="stat-card"><div class="stat-value" id="stat-approved">—</div><div class="stat-label">Approved</div></div>
+    <div class="stat-card"><div class="stat-value" id="stat-sessions">—</div><div class="stat-label">Discovery Sessions</div></div>
+    <div class="stat-card"><div class="stat-value" id="stat-cities">—</div><div class="stat-label">Cities</div></div>
+  </div>
+
+  <div class="filters">
+    <select class="filter-select" id="filter-status" onchange="loadLeads()">
+      <option value="">All Status</option>
+      <option value="new" selected>New</option>
+      <option value="approved">Approved</option>
+      <option value="rejected">Rejected</option>
+      <option value="contacted">Contacted</option>
+    </select>
+    <select class="filter-select" id="filter-category" onchange="loadLeads()">
+      <option value="">All Categories</option>
+      <option value="primary_care">Primary Care</option>
+      <option value="family_medicine">Family Medicine</option>
+      <option value="cardiology">Cardiology</option>
+      <option value="dermatology">Dermatology</option>
+      <option value="orthopedics">Orthopedics</option>
+      <option value="pediatrics">Pediatrics</option>
+      <option value="obgyn">OB/GYN</option>
+      <option value="mental_health">Mental Health</option>
+      <option value="urgent_care">Urgent Care</option>
+    </select>
+    <input class="filter-input" id="filter-search" placeholder="Search by name, email, city..." onkeyup="debounceSearch()">
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Business</th>
+          <th>Location</th>
+          <th>Contact</th>
+          <th>Rating</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="leads-body">
+        <tr><td colspan="6" class="loading"><span class="spinner"></span> Loading leads...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination" id="pagination"></div>
+
+  <!-- Email Preview Modal -->
+  <div class="modal-overlay" id="email-modal">
+    <div class="modal">
+      <h2>📧 Email Preview</h2>
+      <div class="field"><label>To</label><div class="value" id="email-to">—</div></div>
+      <div class="field"><label>Subject</label><div class="value" id="email-subject">—</div></div>
+      <div class="field"><label>Body</label><textarea id="email-body" readonly></textarea></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal()">Close</button>
+        <button class="btn btn-danger btn-sm" onclick="rejectLead()">✕ Reject</button>
+        <button class="btn btn-success" onclick="approveLead()">✓ Approve & Stage</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="flash"></div>
+
+  <script>
+    const API = 'https://sophiaprovider.com';
+    const AUTH = 'Bearer sophia-admin-6f8a2c1b4d9e';
+    let currentLeadId = null;
+    let searchTimeout = null;
+
+    async function api(path, opts = {}) {
+      const res = await fetch(`${API}${path}`, {
+        headers: { 'Authorization': AUTH, 'Content-Type': 'application/json', ...opts.headers },
+        ...opts
+      });
+      return res.json();
+    }
+
+    function flash(msg, type = 'success') {
+      const el = document.getElementById('flash');
+      el.className = `flash flash-${type}`;
+      el.textContent = msg;
+      setTimeout(() => el.className = '', 3000);
+    }
+
+    async function loadStats() {
+      try {
+        const data = await api('/api/admin/stats');
+        document.getElementById('stat-total').textContent = data.total_leads || 0;
+        document.getElementById('stat-new').textContent = data.status_counts?.new || 0;
+        document.getElementById('stat-approved').textContent = data.status_counts?.approved || 0;
+        document.getElementById('stat-sessions').textContent = data.discovery_sessions || 0;
+        document.getElementById('stat-cities').textContent = data.top_cities?.length || 0;
+      } catch(e) { console.error(e); }
+    }
+
+    async function loadLeads(offset = 0) {
+      const status = document.getElementById('filter-status').value;
+      const category = document.getElementById('filter-category').value;
+      const search = document.getElementById('filter-search').value;
+      
+      let url = `/api/admin/leads?limit=20&offset=${offset}`;
+      if (status) url += `&status=${status}`;
+      if (category) url += `&type=${category}`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+
+      try {
+        const data = await api(url);
+        const tbody = document.getElementById('leads-body');
+        
+        if (!data.leads || data.leads.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="empty">No leads found</td></tr>';
+          document.getElementById('pagination').innerHTML = '';
+          return;
+        }
+
+        tbody.innerHTML = data.leads.map(l => `
+          <tr>
+            <td>
+              <div class="lead-name">${esc(l.business_name)}</div>
+              <div style="font-size:0.75rem;color:#6b7280">${esc(l.category || l.organization_type || '')}</div>
+            </td>
+            <td><div>${esc(l.city)}, ${esc(l.state)}</div></td>
+            <td>
+              ${l.email ? `<div style="font-size:0.8rem">✉ ${esc(l.email)}</div>` : '<span style="color:#6b7280">No email</span>'}
+              ${l.phone ? `<div style="font-size:0.75rem;color:#9ca3af">📞 ${esc(l.phone)}</div>` : ''}
+            </td>
+            <td>
+              ${l.google_rating ? `<span class="stars">★ ${l.google_rating}</span> <span style="font-size:0.75rem;color:#6b7280">(${l.google_review_count})</span>` : '—'}
+            </td>
+            <td><span class="badge badge-${l.status}">${l.status}</span></td>
+            <td>
+              <button class="btn btn-outline btn-sm" onclick="previewEmail(${l.id})" title="Preview email">📧</button>
+              <button class="btn btn-success btn-sm" onclick="quickApprove(${l.id})" title="Approve">✓</button>
+              <button class="btn btn-danger btn-sm" onclick="quickReject(${l.id})" title="Reject">✕</button>
+            </td>
+          </tr>
+        `).join('');
+
+        // Pagination
+        const totalPages = Math.ceil(data.total / 20);
+        const currentPage = Math.floor(offset / 20);
+        let pagHtml = '';
+        if (offset > 0) pagHtml += `<button class="btn btn-outline btn-sm" onclick="loadLeads(${offset - 20})">← Prev</button>`;
+        pagHtml += `<span>Page ${currentPage + 1} of ${totalPages || 1} (${data.total} leads)</span>`;
+        if (offset + 20 < data.total) pagHtml += `<button class="btn btn-outline btn-sm" onclick="loadLeads(${offset + 20})">Next →</button>`;
+        document.getElementById('pagination').innerHTML = pagHtml;
+
+      } catch(e) {
+        document.getElementById('leads-body').innerHTML = `<tr><td colspan="6" class="loading">Error loading leads: ${esc(e.message)}</td></tr>`;
+      }
+    }
+
+    async function previewEmail(id) {
+      currentLeadId = id;
+      try {
+        const data = await api(`/api/admin/leads/${id}/email`);
+        document.getElementById('email-to').textContent = data.to || '—';
+        document.getElementById('email-subject').textContent = data.subject || '—';
+        document.getElementById('email-body').value = data.body || '';
+        document.getElementById('email-modal').classList.add('active');
+      } catch(e) {
+        flash('Failed to load email preview', 'error');
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('email-modal').classList.remove('active');
+      currentLeadId = null;
+    }
+
+    async function approveLead() {
+      if (!currentLeadId) return;
+      try {
+        await api(`/api/admin/leads/${currentLeadId}/send`, { method: 'POST' });
+        flash('Lead approved and staged for outreach!');
+        closeModal();
+        loadLeads(); loadStats();
+      } catch(e) {
+        flash('Failed to approve lead', 'error');
+      }
+    }
+
+    async function rejectLead() {
+      if (!currentLeadId) return;
+      try {
+        await api(`/api/admin/leads/${currentLeadId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'rejected' })
+        });
+        flash('Lead rejected');
+        closeModal();
+        loadLeads(); loadStats();
+      } catch(e) {
+        flash('Failed to reject lead', 'error');
+      }
+    }
+
+    async function quickApprove(id) {
+      try {
+        await api(`/api/admin/leads/${id}/send`, { method: 'POST' });
+        flash('Lead approved! ✓');
+        loadLeads(); loadStats();
+      } catch(e) {
+        flash('Failed to approve', 'error');
+      }
+    }
+
+    async function quickReject(id) {
+      try {
+        await api(`/api/admin/leads/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'rejected' })
+        });
+        flash('Lead rejected');
+        loadLeads(); loadStats();
+      } catch(e) {
+        flash('Failed to reject', 'error');
+      }
+    }
+
+    async function discoverLeads() {
+      flash('Discovery triggered — check back in 2 minutes', 'success');
+      // This would trigger a Cloud Run job or call to run discovery
+      alert('Lead discovery runs via cron or manual script. Run: python3 discover.py --city "Miami" --state "FL" --category primary_care --max 10');
+    }
+
+    function refreshData() {
+      loadLeads();
+      loadStats();
+    }
+
+    function debounceSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => loadLeads(), 300);
+    }
+
+    function esc(s) {
+      if (!s) return '';
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    // Init
+    loadStats();
+    loadLeads();
+  </script>
 </body>
 </html>
