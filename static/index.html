@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sophia AI — Admin</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Google Identity Services — loaded only when OAuth is active (see init logic) -->
   <script id="gsi-script"></script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -27,7 +26,6 @@
     html { scroll-behavior: smooth; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* ---- HEADER ---- */
     .header {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -51,7 +49,6 @@
     }
     .header-right { display: flex; gap: 0.625rem; align-items: center; }
 
-    /* ---- BUTTONS ---- */
     .btn {
       padding: 0.45rem 1rem;
       border-radius: 8px;
@@ -67,12 +64,6 @@
     }
     .btn-primary { background: linear-gradient(135deg, #7c3aed, #3b82f6); color: #fff; }
     .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
-    .btn-success { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.25); }
-    .btn-success:hover { background: rgba(52,211,153,0.25); }
-    .btn-danger { background: rgba(248,113,113,0.12); color: var(--red); border: 1px solid rgba(248,113,113,0.22); }
-    .btn-danger:hover { background: rgba(248,113,113,0.22); }
-    .btn-blue { background: rgba(96,165,250,0.12); color: var(--accent2); border: 1px solid rgba(96,165,250,0.22); }
-    .btn-blue:hover { background: rgba(96,165,250,0.22); }
     .btn-outline { background: transparent; border: 1px solid var(--border2); color: var(--muted2); }
     .btn-outline:hover { border-color: rgba(255,255,255,0.22); color: var(--text); }
     .btn-ghost { background: transparent; border: none; color: var(--muted2); }
@@ -80,10 +71,8 @@
     .btn-sm { padding: 0.3rem 0.65rem; font-size: 0.72rem; }
     .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
 
-    /* ---- MAIN LAYOUT ---- */
     .main { max-width: 1320px; margin: 0 auto; padding: 2rem; }
 
-    /* ---- STAT CARDS ---- */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -120,9 +109,7 @@
       min-height: 2.2rem;
     }
     .stat-lbl { font-size: 0.72rem; color: var(--muted); margin-top: 0.4rem; text-transform: uppercase; letter-spacing: 0.06em; }
-    .stat-delta { font-size: 0.72rem; color: var(--green); margin-top: 0.25rem; }
 
-    /* ---- CHARTS ROW ---- */
     .charts-row {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -139,7 +126,6 @@
     .chart-title { font-size: 0.8rem; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem; }
     .chart-canvas-wrap { position: relative; height: 180px; }
 
-    /* Funnel */
     .funnel { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
     .funnel-row { display: flex; align-items: center; gap: 0.75rem; }
     .funnel-bar-wrap { flex: 1; background: rgba(255,255,255,0.05); border-radius: 4px; height: 28px; overflow: hidden; }
@@ -158,11 +144,9 @@
     .funnel-label { font-size: 0.72rem; color: var(--muted2); width: 70px; text-align: right; text-transform: uppercase; letter-spacing: 0.04em; }
     .funnel-count { font-size: 0.8rem; font-weight: 700; width: 36px; text-align: right; color: var(--text); }
     .funnel-bar-new { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
-    .funnel-bar-approved { background: linear-gradient(90deg, #059669, #34d399); }
-    .funnel-bar-sent { background: linear-gradient(90deg, #1d4ed8, #60a5fa); }
+    .funnel-bar-contact { background: linear-gradient(90deg, #b45309, #fbbf24); }
     .funnel-bar-rejected { background: linear-gradient(90deg, #991b1b, #f87171); }
 
-    /* Top cities list */
     .cities-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
     .city-row { display: flex; align-items: center; gap: 0.625rem; }
     .city-name { font-size: 0.8rem; width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -176,7 +160,6 @@
     }
     .city-count { font-size: 0.72rem; color: var(--muted2); width: 24px; text-align: right; }
 
-    /* ---- DISCOVER PANEL ---- */
     .discover-panel {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -201,7 +184,6 @@
     }
     .discover-form input:focus, .discover-form select:focus { outline: none; border-color: var(--accent); }
 
-    /* ---- FILTERS ---- */
     .leads-header {
       display: flex;
       align-items: center;
@@ -223,7 +205,6 @@
     .filter-input::placeholder { color: var(--muted); }
     .filter-select:focus, .filter-input:focus { outline: none; border-color: var(--accent); }
 
-    /* ---- TABLE ---- */
     .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
     table { width: 100%; border-collapse: collapse; font-size: 0.82rem; background: var(--surface); }
     th {
@@ -260,7 +241,8 @@
     .badge-contacted { background: rgba(251,191,36,0.12); color: #fbbf24; }
     .stars { color: var(--amber); font-size: 0.75rem; }
 
-    /* ---- LOADING / EMPTY ---- */
+    .contacted-check { width: 18px; height: 18px; accent-color: #fbbf24; cursor: pointer; }
+
     .loading { text-align: center; padding: 3rem; color: var(--muted); }
     .spinner {
       display: inline-block;
@@ -275,7 +257,6 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .empty { text-align: center; padding: 4rem; color: var(--muted); font-size: 1rem; }
 
-    /* ---- PAGINATION ---- */
     .pagination {
       display: flex;
       gap: 0.5rem;
@@ -285,65 +266,6 @@
     }
     .pagination span { color: var(--muted2); font-size: 0.8rem; }
 
-    /* ---- EMAIL MODAL ---- */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.75);
-      z-index: 200;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      backdrop-filter: blur(4px);
-    }
-    .modal-overlay.active { display: flex; }
-    .modal {
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      border-radius: 18px;
-      padding: 2rem;
-      max-width: 680px;
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
-      animation: popIn 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    @keyframes popIn { from { transform: scale(0.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    .modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.25rem; gap: 1rem; }
-    .modal-title { font-size: 1.1rem; font-weight: 700; color: #f0f0fc; }
-    .modal-lead-meta { font-size: 0.75rem; color: var(--muted2); margin-top: 0.25rem; }
-    .modal .field { margin-bottom: 1rem; }
-    .modal .field label { display: block; font-size: 0.7rem; color: var(--muted); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    .modal input[type="text"] {
-      width: 100%;
-      background: #0a0a14;
-      border: 1px solid var(--border2);
-      color: var(--text);
-      padding: 0.6rem 0.875rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-family: inherit;
-    }
-    .modal input[type="text"]:focus, .modal textarea:focus { outline: none; border-color: var(--accent); }
-    .modal textarea {
-      width: 100%;
-      min-height: 220px;
-      background: #0a0a14;
-      border: 1px solid var(--border2);
-      color: var(--text);
-      padding: 0.875rem;
-      border-radius: 8px;
-      font-size: 0.82rem;
-      line-height: 1.65;
-      font-family: inherit;
-      resize: vertical;
-    }
-    .modal-actions { display: flex; gap: 0.625rem; justify-content: flex-end; margin-top: 1.5rem; flex-wrap: wrap; }
-    .modal-spinner { display: none; }
-    .modal-spinner.active { display: inline-block; }
-
-    /* ---- TOAST ---- */
     .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 999; display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none; }
     .toast {
       padding: 0.75rem 1.25rem;
@@ -360,7 +282,6 @@
     .toast-info { background: rgba(96,165,250,0.9); color: #001a33; }
     @keyframes toastIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-    /* ---- COUNT-UP ANIMATION ---- */
     @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     .stat-card { animation: fadeUp 0.4s ease both; }
     .stat-card:nth-child(1) { animation-delay: 0.05s; }
@@ -370,16 +291,14 @@
     .stat-card:nth-child(5) { animation-delay: 0.25s; }
     .stat-card:nth-child(6) { animation-delay: 0.30s; }
 
-    /* ---- GOOGLE SIGN-IN GATE ---- */
     #auth-gate {
-      display: none; /* hidden until OAuth is active */
+      display: none;
       position: fixed;
       inset: 0;
       z-index: 9999;
       background: var(--bg);
       background-image: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124,58,237,0.18) 0%, transparent 70%),
                         radial-gradient(ellipse 60% 40% at 80% 100%, rgba(59,130,246,0.12) 0%, transparent 60%);
-      display: none;
       align-items: center;
       justify-content: center;
       flex-direction: column;
@@ -413,18 +332,8 @@
       text-align: center;
       line-height: 1.55;
     }
-    .gate-divider {
-      width: 100%;
-      height: 1px;
-      background: var(--border);
-    }
-    .gate-error {
-      font-size: 0.8rem;
-      color: var(--red);
-      text-align: center;
-      min-height: 1.2em;
-    }
-    /* header user pill */
+    .gate-divider { width: 100%; height: 1px; background: var(--border); }
+    .gate-error { font-size: 0.8rem; color: var(--red); text-align: center; min-height: 1.2em; }
     .user-pill {
       display: none;
       align-items: center;
@@ -438,23 +347,19 @@
 </head>
 <body>
 
-  <!-- Google Sign-In Gate (shown only when GOOGLE_OAUTH_CLIENT_ID is configured) -->
   <div id="auth-gate">
     <div class="gate-card">
       <div class="gate-logo">Sophia AI Admin</div>
       <div class="gate-sub">Sign in with your <strong>@trysoph.com</strong> Google account to continue.</div>
       <div class="gate-divider"></div>
-      <!-- Google One Tap / button rendered here -->
       <div id="g-signin-btn"></div>
       <div class="gate-error" id="gate-error"></div>
     </div>
   </div>
 
-  <!-- Header -->
   <header class="header">
     <div class="logo">Sophia AI Admin</div>
     <div class="header-right">
-      <!-- User pill — shown when signed in via Google -->
       <div class="user-pill" id="user-pill">
         <span class="user-email" id="user-email"></span>
         <button class="btn btn-outline btn-sm" onclick="signOut()">Sign out</button>
@@ -466,21 +371,18 @@
 
   <div class="main">
 
-    <!-- Stat Cards -->
     <div class="stats-grid" id="stats-grid">
       <div class="stat-card"><div class="stat-val" id="s-total">—</div><div class="stat-lbl">Total Leads</div></div>
       <div class="stat-card"><div class="stat-val" id="s-new">—</div><div class="stat-lbl">New</div></div>
-      <div class="stat-card"><div class="stat-val" id="s-approved">—</div><div class="stat-lbl">Approved</div></div>
-      <div class="stat-card"><div class="stat-val" id="s-sent">—</div><div class="stat-lbl">Sent</div></div>
+      <div class="stat-card"><div class="stat-val" id="s-contacted">—</div><div class="stat-lbl">Contacted</div></div>
+      <div class="stat-card"><div class="stat-val" id="s-rejected">—</div><div class="stat-lbl">Rejected</div></div>
       <div class="stat-card"><div class="stat-val" id="s-sessions">—</div><div class="stat-lbl">Discovery Sessions</div></div>
-      <div class="stat-card"><div class="stat-val" id="s-cities">—</div><div class="stat-lbl">Top Cities</div></div>
+      <div class="stat-card"><div class="stat-val" id="s-cities">—</div><div class="stat-lbl">Cities</div></div>
     </div>
 
-    <!-- Charts Row -->
     <div class="charts-row">
-      <!-- Pipeline Funnel -->
       <div class="chart-card">
-        <div class="chart-title">Pipeline Funnel</div>
+        <div class="chart-title">Pipeline</div>
         <div class="funnel" id="funnel">
           <div class="funnel-row">
             <div class="funnel-label">New</div>
@@ -488,14 +390,9 @@
             <div class="funnel-count" id="funnel-new-count">0</div>
           </div>
           <div class="funnel-row">
-            <div class="funnel-label">Approved</div>
-            <div class="funnel-bar-wrap"><div class="funnel-bar funnel-bar-approved" id="funnel-approved">0</div></div>
-            <div class="funnel-count" id="funnel-approved-count">0</div>
-          </div>
-          <div class="funnel-row">
-            <div class="funnel-label">Sent</div>
-            <div class="funnel-bar-wrap"><div class="funnel-bar funnel-bar-sent" id="funnel-sent">0</div></div>
-            <div class="funnel-count" id="funnel-sent-count">0</div>
+            <div class="funnel-label">Contacted</div>
+            <div class="funnel-bar-wrap"><div class="funnel-bar funnel-bar-contact" id="funnel-contacted">0</div></div>
+            <div class="funnel-count" id="funnel-contacted-count">0</div>
           </div>
           <div class="funnel-row">
             <div class="funnel-label">Rejected</div>
@@ -505,7 +402,6 @@
         </div>
       </div>
 
-      <!-- By Category Donut -->
       <div class="chart-card">
         <div class="chart-title">By Category</div>
         <div class="chart-canvas-wrap">
@@ -513,7 +409,6 @@
         </div>
       </div>
 
-      <!-- Top Cities -->
       <div class="chart-card">
         <div class="chart-title">Top Cities</div>
         <div class="cities-list" id="cities-list">
@@ -522,7 +417,6 @@
       </div>
     </div>
 
-    <!-- Discover Panel -->
     <div class="discover-panel" id="discover-panel">
       <h3>&#128270; Launch Discovery</h3>
       <div class="discover-form">
@@ -552,16 +446,17 @@
       </div>
     </div>
 
-    <!-- Leads Section -->
     <div class="leads-header">
       <div class="filters">
         <select class="filter-select" id="filter-status" onchange="loadLeads()">
           <option value="">All Status</option>
           <option value="new" selected>New</option>
-          <option value="approved">Approved</option>
-          <option value="sent">Sent</option>
           <option value="rejected">Rejected</option>
-          <option value="contacted">Contacted</option>
+        </select>
+        <select class="filter-select" id="filter-contacted" onchange="loadLeads()">
+          <option value="">All</option>
+          <option value="true">Contacted</option>
+          <option value="false">Not Contacted</option>
         </select>
         <select class="filter-select" id="filter-category" onchange="loadLeads()">
           <option value="">All Categories</option>
@@ -578,12 +473,12 @@
       <table>
         <thead>
           <tr>
+            <th style="width:36px">&#9745;</th>
             <th>Business</th>
             <th>Location</th>
             <th>Contact</th>
             <th>Rating</th>
             <th>Status</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody id="leads-body">
@@ -593,70 +488,19 @@
     </div>
     <div class="pagination" id="pagination"></div>
 
-  </div><!-- /main -->
-
-  <!-- Email Modal -->
-  <div class="modal-overlay" id="email-modal">
-    <div class="modal">
-      <div class="modal-header">
-        <div>
-          <div class="modal-title">&#128140; Email Draft</div>
-          <div class="modal-lead-meta" id="modal-lead-meta"></div>
-        </div>
-        <button class="btn btn-ghost btn-sm" onclick="closeModal()" title="Close">&#10005;</button>
-      </div>
-      <div id="modal-loading" class="loading" style="padding:2rem 0;display:none">
-        <span class="spinner"></span> Generating AI draft…
-      </div>
-      <div id="modal-content">
-        <div class="field">
-          <label>To</label>
-          <div style="font-size:0.85rem;color:var(--muted2)" id="modal-to">—</div>
-        </div>
-        <div class="field">
-          <label>Send As</label>
-          <select id="modal-sender" style="width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:0.45rem 0.65rem;border-radius:8px;font-size:0.85rem;outline:none;"></select>
-        </div>
-        <div class="field">
-          <label>Subject</label>
-          <input type="text" id="modal-subject" placeholder="Email subject">
-        </div>
-        <div class="field">
-          <label>Body</label>
-          <textarea id="modal-body" placeholder="Email body"></textarea>
-        </div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
-        <button class="btn btn-blue btn-sm" onclick="regenerateEmail()">&#128260; Regenerate</button>
-        <button class="btn btn-outline btn-sm" onclick="saveDraft()">&#128190; Save Draft</button>
-        <button class="btn btn-danger btn-sm" onclick="rejectFromModal()">&#10005; Reject</button>
-        <button class="btn btn-success" onclick="approveAndSend()">&#10003; Approve &amp; Send</button>
-      </div>
-    </div>
   </div>
 
-  <!-- Toast container -->
   <div class="toast-container" id="toast-container"></div>
 
   <script>
-    // ---- CONFIG ----
     const API_BASE = 'https://sophiaprovider.com';
-    // Legacy static bearer — used when Google OAuth is NOT configured.
     const LEGACY_AUTH = 'Bearer sophia-admin-6f8a2c1b4d9e';
 
-    // ---- AUTH STATE ----
-    // authToken holds the active bearer value — either LEGACY_AUTH or a live
-    // Google ID token. Starts as legacy; overwritten by initAuth() if needed.
     let authToken = LEGACY_AUTH;
-
-    // ---- STATE ----
-    let currentLeadId = null;
     let currentOffset = 0;
     let searchTimeout = null;
     let categoryChart = null;
 
-    // ---- API HELPER ----
     async function api(path, opts = {}) {
       const res = await fetch(`${API_BASE}${path}`, {
         headers: {
@@ -667,8 +511,6 @@
         ...opts,
       });
       if (!res.ok) {
-        // If Google mode is active and we get a 401, the token has expired —
-        // clear it and show the sign-in gate again.
         if (res.status === 401 && authToken !== LEGACY_AUTH) {
           clearGoogleSession();
           showGate();
@@ -679,26 +521,17 @@
       return res.json();
     }
 
-    // ---- GOOGLE OAUTH HELPERS ----
-    function showGate() {
-      document.getElementById('auth-gate').classList.add('visible');
-    }
-    function hideGate() {
-      document.getElementById('auth-gate').classList.remove('visible');
-    }
+    function showGate() { document.getElementById('auth-gate').classList.add('visible'); }
+    function hideGate() { document.getElementById('auth-gate').classList.remove('visible'); }
     function clearGoogleSession() {
-      authToken = LEGACY_AUTH; // fall back so next api() doesn't cause a redirect loop
+      authToken = LEGACY_AUTH;
       try { sessionStorage.removeItem('sophia_admin_token'); sessionStorage.removeItem('sophia_admin_email'); } catch (_) {}
       document.getElementById('user-pill').classList.remove('visible');
       document.getElementById('user-email').textContent = '';
     }
-    function signOut() {
-      clearGoogleSession();
-      showGate();
-    }
+    function signOut() { clearGoogleSession(); showGate(); }
     function onGoogleCredential(response) {
       const idToken = response.credential;
-      // Decode the JWT payload (no verification — server does that)
       let email = '';
       try {
         const payload = JSON.parse(atob(idToken.split('.')[1]));
@@ -708,49 +541,37 @@
           return;
         }
       } catch (_) {}
-      // Store token
       authToken = 'Bearer ' + idToken;
       try {
         sessionStorage.setItem('sophia_admin_token', idToken);
         sessionStorage.setItem('sophia_admin_email', email);
       } catch (_) {}
-      // Show user pill
       document.getElementById('user-email').textContent = email;
       document.getElementById('user-pill').classList.add('visible');
       document.getElementById('gate-error').textContent = '';
       hideGate();
-      // Load the app
       loadStats();
       loadLeads();
-      loadSenders();
     }
 
-    // ---- BOOT: check auth-config, then either show Google gate or load normally ----
     async function initAuth() {
       let googleClientId = '';
       try {
         const cfg = await fetch(`${API_BASE}/api/admin/auth-config`).then(r => r.json());
         googleClientId = (cfg.google_client_id || '').trim();
-      } catch (_) {
-        // Can't reach auth-config — proceed with legacy mode.
-      }
+      } catch (_) {}
 
       if (!googleClientId) {
-        // FLAG OFF: legacy bearer mode, load app immediately.
         loadStats();
         loadLeads();
-        loadSenders();
         return;
       }
 
-      // FLAG ON: Google OAuth mode.
-      // 1. Try to restore session from sessionStorage.
       let restored = false;
       try {
         const savedToken = sessionStorage.getItem('sophia_admin_token');
         const savedEmail = sessionStorage.getItem('sophia_admin_email');
         if (savedToken && savedEmail) {
-          // Validate it's still good by decoding exp.
           const payload = JSON.parse(atob(savedToken.split('.')[1]));
           if (payload.exp && payload.exp * 1000 > Date.now()) {
             authToken = 'Bearer ' + savedToken;
@@ -767,11 +588,9 @@
       if (restored) {
         loadStats();
         loadLeads();
-        loadSenders();
         return;
       }
 
-      // 2. Load Google Identity Services and show the gate.
       const gsiScript = document.getElementById('gsi-script');
       gsiScript.src = 'https://accounts.google.com/gsi/client';
       gsiScript.async = true;
@@ -784,60 +603,13 @@
         });
         google.accounts.id.renderButton(
           document.getElementById('g-signin-btn'),
-          {
-            theme: 'filled_black',
-            size: 'large',
-            shape: 'pill',
-            text: 'signin_with',
-            logo_alignment: 'left',
-            width: 280,
-          }
+          { theme: 'filled_black', size: 'large', shape: 'pill', text: 'signin_with', logo_alignment: 'left', width: 280 }
         );
-        // Also show One Tap prompt
         google.accounts.id.prompt();
       };
       showGate();
     }
 
-    // ---- SENDER DROPDOWN ----
-    const FALLBACK_SENDERS = [
-      'jeremiah@oursophia.com',
-      'jeremiah@sophiabooking.com',
-      'jeremiah@sophiaprovider.com',
-      'jeremiah@sophiascheduling.com',
-      'jeremiah@sophiateam.com',
-      'jeremiah@trysoph.com',
-    ];
-
-    async function loadSenders() {
-      let senders = FALLBACK_SENDERS.map(a => ({ address: a, connected: true }));
-      try {
-        const data = await api('/api/admin/senders');
-        if (data && Array.isArray(data.senders) && data.senders.length > 0) {
-          senders = data.senders;
-        }
-      } catch (_) {
-        // Endpoint not yet live — use fallback list silently.
-      }
-
-      const preferred = localStorage.getItem('sophia_sender') || 'jeremiah@trysoph.com';
-      const sel = document.getElementById('modal-sender');
-      sel.innerHTML = '';
-      senders.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.address;
-        opt.textContent = s.address + (s.connected === false ? ' (disconnected)' : '');
-        if (s.address === preferred) opt.selected = true;
-        sel.appendChild(opt);
-      });
-      // If preferred wasn't in list, default to jeremiah@trysoph.com if present, else first.
-      if (!sel.value || !senders.find(s => s.address === sel.value)) {
-        const fallbackOpt = sel.querySelector('option[value="jeremiah@trysoph.com"]');
-        if (fallbackOpt) fallbackOpt.selected = true;
-      }
-    }
-
-    // ---- TOAST ----
     function toast(msg, type = 'success') {
       const el = document.createElement('div');
       el.className = `toast toast-${type}`;
@@ -850,7 +622,6 @@
       }, 3200);
     }
 
-    // ---- ESCAPE ----
     function esc(s) {
       if (s == null) return '';
       const d = document.createElement('div');
@@ -858,7 +629,6 @@
       return d.innerHTML;
     }
 
-    // ---- COUNT-UP ----
     function countUp(el, target, duration = 900) {
       const start = performance.now();
       const from = parseInt(el.textContent) || 0;
@@ -873,7 +643,6 @@
       requestAnimationFrame(step);
     }
 
-    // ---- STATS + CHARTS ----
     async function loadStats() {
       try {
         const d = await api('/api/admin/stats');
@@ -881,17 +650,15 @@
 
         countUp(document.getElementById('s-total'), d.total_leads || 0);
         countUp(document.getElementById('s-new'), sc.new || 0);
-        countUp(document.getElementById('s-approved'), sc.approved || 0);
-        countUp(document.getElementById('s-sent'), sc.sent || 0);
+        countUp(document.getElementById('s-contacted'), sc.contacted || 0);
+        countUp(document.getElementById('s-rejected'), sc.rejected || 0);
         countUp(document.getElementById('s-sessions'), d.discovery_sessions || 0);
         countUp(document.getElementById('s-cities'), (d.top_cities || []).length);
 
-        // Funnel
         const total = d.total_leads || 1;
         const funnelData = [
           { key: 'new',      val: sc.new || 0 },
-          { key: 'approved', val: sc.approved || 0 },
-          { key: 'sent',     val: sc.sent || 0 },
+          { key: 'contacted',val: sc.contacted || 0 },
           { key: 'rejected', val: sc.rejected || 0 },
         ];
         funnelData.forEach(({ key, val }) => {
@@ -904,7 +671,6 @@
           if (cnt) cnt.textContent = val;
         });
 
-        // By-category donut
         const cats = (d.by_category || []).slice(0, 8);
         if (cats.length) {
           const labels = cats.map(c => (c.category || 'Other').replace(/_/g, ' '));
@@ -913,19 +679,11 @@
           if (categoryChart) categoryChart.destroy();
           categoryChart = new Chart(document.getElementById('chart-category').getContext('2d'), {
             type: 'doughnut',
-            data: {
-              labels,
-              datasets: [{ data: values, backgroundColor: palette, borderWidth: 0, hoverOffset: 6 }],
-            },
+            data: { labels, datasets: [{ data: values, backgroundColor: palette, borderWidth: 0, hoverOffset: 6 }] },
             options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              cutout: '68%',
+              responsive: true, maintainAspectRatio: false, cutout: '68%',
               plugins: {
-                legend: {
-                  position: 'right',
-                  labels: { color: '#8888aa', font: { size: 10 }, boxWidth: 10, padding: 8 },
-                },
+                legend: { position: 'right', labels: { color: '#8888aa', font: { size: 10 }, boxWidth: 10, padding: 8 } },
                 tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}` } },
               },
             },
@@ -934,20 +692,16 @@
           document.getElementById('chart-category').parentElement.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding-top:0.5rem">No category data yet</div>';
         }
 
-        // Top cities
         const cities = (d.top_cities || []).slice(0, 6);
         if (cities.length) {
           const maxCount = Math.max(...cities.map(c => c.count || 0), 1);
           document.getElementById('cities-list').innerHTML = cities.map(c => `
             <div class="city-row">
               <div class="city-name" title="${esc(c.city)}, ${esc(c.state)}">${esc(c.city)}</div>
-              <div class="city-bar-wrap">
-                <div class="city-bar" style="width:0%" data-pct="${Math.round((c.count / maxCount) * 100)}"></div>
-              </div>
+              <div class="city-bar-wrap"><div class="city-bar" style="width:0%" data-pct="${Math.round((c.count / maxCount) * 100)}"></div></div>
               <div class="city-count">${c.count}</div>
             </div>
           `).join('');
-          // animate city bars after a tick
           setTimeout(() => {
             document.querySelectorAll('.city-bar').forEach(b => {
               b.style.transition = 'width 1s cubic-bezier(0.4,0,0.2,1)';
@@ -963,15 +717,16 @@
       }
     }
 
-    // ---- LEADS TABLE ----
     async function loadLeads(offset = 0) {
       currentOffset = offset;
       const status   = document.getElementById('filter-status').value;
+      const contacted = document.getElementById('filter-contacted').value;
       const category = document.getElementById('filter-category').value;
       const search   = document.getElementById('filter-search').value.trim();
 
       let url = `/api/admin/leads?limit=20&offset=${offset}`;
       if (status)   url += `&status=${encodeURIComponent(status)}`;
+      if (contacted) url += `&contacted=${encodeURIComponent(contacted)}`;
       if (category) url += `&category=${encodeURIComponent(category)}`;
       if (search)   url += `&search=${encodeURIComponent(search)}`;
 
@@ -996,29 +751,24 @@
           const contact = l.email
             ? `<div style="font-size:0.78rem">&#9993; ${esc(l.email)}</div>${l.phone ? `<div style="font-size:0.72rem;color:var(--muted)">&#128222; ${esc(l.phone)}</div>` : ''}`
             : `<span style="color:var(--muted);font-size:0.75rem">No email</span>`;
+          const isContacted = l.contacted === true;
+          const checked = isContacted ? 'checked' : '';
 
           return `
             <tr>
+              <td><input type="checkbox" class="contacted-check" data-id="${esc(l.id)}" ${checked}></td>
               <td>
                 <div class="lead-name">${esc(l.business_name)}</div>
                 <div class="lead-sub">${esc((l.category || l.organization_type || '').replace(/_/g, ' '))}</div>
               </td>
-              <td>
-                <div style="font-size:0.82rem">${esc(l.city)}, ${esc(l.state)}</div>
-              </td>
+              <td><div style="font-size:0.82rem">${esc(l.city)}, ${esc(l.state)}</div></td>
               <td>${contact}</td>
               <td>${rating}</td>
               <td>${statusBadge}</td>
-              <td>
-                <button class="btn btn-blue btn-sm" data-action="preview" data-id="${esc(l.id)}" title="Preview email">&#128140;</button>
-                <button class="btn btn-success btn-sm" data-action="approve" data-id="${esc(l.id)}" title="Quick approve">&#10003;</button>
-                <button class="btn btn-danger btn-sm" data-action="reject" data-id="${esc(l.id)}" title="Quick reject">&#10005;</button>
-              </td>
             </tr>
           `;
         }).join('');
 
-        // Pagination
         const total = data.total || 0;
         const totalPages = Math.ceil(total / 20);
         const currentPage = Math.floor(offset / 20) + 1;
@@ -1033,15 +783,23 @@
       }
     }
 
-    // ---- EVENT DELEGATION for table actions ----
-    document.getElementById('leads-body').addEventListener('click', function(e) {
-      const btn = e.target.closest('button[data-action]');
-      if (!btn) return;
-      const action = btn.dataset.action;
-      const id = btn.dataset.id;
-      if (action === 'preview') previewEmail(id);
-      else if (action === 'approve') quickApprove(id);
-      else if (action === 'reject') quickReject(id);
+    // Checkbox toggle for contacted
+    document.getElementById('leads-body').addEventListener('change', async function(e) {
+      const cb = e.target.closest('input.contacted-check');
+      if (!cb) return;
+      const id = cb.dataset.id;
+      const contacted = cb.checked;
+      try {
+        await api(`/api/admin/leads/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ contacted }),
+        });
+        toast(contacted ? 'Marked as contacted' : 'Marked as not contacted');
+        loadStats();
+      } catch (err) {
+        toast('Update failed: ' + err.message, 'error');
+        cb.checked = !contacted; // revert
+      }
     });
 
     document.getElementById('pagination').addEventListener('click', function(e) {
@@ -1050,154 +808,8 @@
       loadLeads(parseInt(btn.dataset.offset, 10));
     });
 
-    // ---- EMAIL MODAL ----
-    async function previewEmail(id) {
-      currentLeadId = id;
-      document.getElementById('modal-lead-meta').textContent = '';
-      document.getElementById('modal-to').textContent = '…';
-      document.getElementById('modal-subject').value = '';
-      document.getElementById('modal-body').value = '';
-      document.getElementById('modal-loading').style.display = 'block';
-      document.getElementById('modal-content').style.opacity = '0.3';
-      document.getElementById('email-modal').classList.add('active');
-
-      try {
-        const data = await api(`/api/admin/leads/${id}/email`);
-        document.getElementById('modal-to').textContent = data.to || '—';
-        document.getElementById('modal-subject').value = data.subject || '';
-        document.getElementById('modal-body').value = data.body || '';
-
-        // Show lead context if available
-        const lead = data.lead || {};
-        const meta = [
-          lead.business_name,
-          lead.city && lead.state ? `${lead.city}, ${lead.state}` : (lead.city || ''),
-          lead.phone,
-          lead.website,
-        ].filter(Boolean).join(' · ');
-        document.getElementById('modal-lead-meta').textContent = meta;
-
-      } catch (e) {
-        toast('Failed to load email draft: ' + e.message, 'error');
-        closeModal();
-      } finally {
-        document.getElementById('modal-loading').style.display = 'none';
-        document.getElementById('modal-content').style.opacity = '1';
-      }
-    }
-
-    async function regenerateEmail() {
-      if (!currentLeadId) return;
-      document.getElementById('modal-loading').style.display = 'block';
-      document.getElementById('modal-content').style.opacity = '0.35';
-      try {
-        const data = await api(`/api/admin/leads/${currentLeadId}/email/regenerate`, { method: 'POST' });
-        document.getElementById('modal-subject').value = data.subject || '';
-        document.getElementById('modal-body').value = data.body || '';
-        toast('Email regenerated');
-      } catch (e) {
-        toast('Regenerate failed: ' + e.message, 'error');
-      } finally {
-        document.getElementById('modal-loading').style.display = 'none';
-        document.getElementById('modal-content').style.opacity = '1';
-      }
-    }
-
-    async function saveDraft() {
-      if (!currentLeadId) return;
-      const subject = document.getElementById('modal-subject').value;
-      const body = document.getElementById('modal-body').value;
-      try {
-        await api(`/api/admin/leads/${currentLeadId}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ email_subject: subject, email_body: body }),
-        });
-        toast('Draft saved');
-      } catch (e) {
-        toast('Save failed: ' + e.message, 'error');
-      }
-    }
-
-    async function approveAndSend() {
-      if (!currentLeadId) return;
-      const subject = document.getElementById('modal-subject').value;
-      const body = document.getElementById('modal-body').value;
-      const senderEl = document.getElementById('modal-sender');
-      const from = senderEl ? senderEl.value : (localStorage.getItem('sophia_sender') || 'jeremiah@trysoph.com');
-      try {
-        await api(`/api/admin/leads/${currentLeadId}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ status: 'approved', email_subject: subject, email_body: body }),
-        });
-        await api(`/api/admin/leads/${currentLeadId}/send`, {
-          method: 'POST',
-          body: JSON.stringify({ from }),
-        });
-        localStorage.setItem('sophia_sender', from);
-        toast('Approved and sent via Instantly!');
-        closeModal();
-        loadLeads(currentOffset);
-        loadStats();
-      } catch (e) {
-        toast('Send failed: ' + e.message, 'error');
-      }
-    }
-
-    async function rejectFromModal() {
-      if (!currentLeadId) return;
-      try {
-        await api(`/api/admin/leads/${currentLeadId}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ status: 'rejected' }),
-        });
-        toast('Lead rejected');
-        closeModal();
-        loadLeads(currentOffset);
-        loadStats();
-      } catch (e) {
-        toast('Reject failed: ' + e.message, 'error');
-      }
-    }
-
-    function closeModal() {
-      document.getElementById('email-modal').classList.remove('active');
-      currentLeadId = null;
-    }
-
-    // ---- QUICK ROW ACTIONS ----
-    async function quickApprove(id) {
-      const from = localStorage.getItem('sophia_sender') || 'jeremiah@trysoph.com';
-      try {
-        await api(`/api/admin/leads/${id}/send`, {
-          method: 'POST',
-          body: JSON.stringify({ from }),
-        });
-        toast('Lead approved & sent!');
-        loadLeads(currentOffset);
-        loadStats();
-      } catch (e) {
-        toast('Approve failed: ' + e.message, 'error');
-      }
-    }
-
-    async function quickReject(id) {
-      try {
-        await api(`/api/admin/leads/${id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ status: 'rejected' }),
-        });
-        toast('Lead rejected');
-        loadLeads(currentOffset);
-        loadStats();
-      } catch (e) {
-        toast('Reject failed: ' + e.message, 'error');
-      }
-    }
-
-    // ---- DISCOVER ----
     function toggleDiscover() {
-      const panel = document.getElementById('discover-panel');
-      panel.classList.toggle('open');
+      document.getElementById('discover-panel').classList.toggle('open');
     }
     document.getElementById('discover-toggle-btn').addEventListener('click', toggleDiscover);
 
@@ -1222,29 +834,13 @@
       }
     }
 
-    // ---- REFRESH / SEARCH ----
-    function refreshAll() {
-      loadStats();
-      loadLeads(0);
-    }
+    function refreshAll() { loadStats(); loadLeads(0); }
 
     function debounceSearch() {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() => loadLeads(0), 320);
     }
 
-    // ---- MODAL CLOSE ON OVERLAY CLICK / ESC ----
-    document.getElementById('email-modal').addEventListener('click', function(e) {
-      if (e.target === this) closeModal();
-    });
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') closeModal();
-    });
-
-    // ---- INIT ----
-    // initAuth() checks the backend's auth-config endpoint and either:
-    // - (flag off) proceeds with the legacy static bearer immediately, OR
-    // - (flag on) shows the Google sign-in gate and loads GSI.
     initAuth();
   </script>
 </body>
