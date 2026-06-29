@@ -365,6 +365,7 @@
         <button class="btn btn-outline btn-sm" onclick="signOut()">Sign out</button>
       </div>
       <button class="btn btn-primary" id="discover-toggle-btn">&#128270; Discover</button>
+      <button class="btn btn-outline" onclick="downloadCsv()">&#128229; Download CSV</button>
       <button class="btn btn-outline" onclick="refreshAll()">&#8635; Refresh</button>
     </div>
   </header>
@@ -839,6 +840,45 @@
     function debounceSearch() {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() => loadLeads(0), 320);
+    }
+
+    async function downloadCsv() {
+      const status   = document.getElementById('filter-status').value;
+      const contacted = document.getElementById('filter-contacted').value;
+      const category = document.getElementById('filter-category').value;
+      const search   = document.getElementById('filter-search').value.trim();
+
+      let url = `${API_BASE}/api/admin/leads/export?`;
+      const qs = [];
+      if (status)    qs.push(`status=${encodeURIComponent(status)}`);
+      if (category)  qs.push(`category=${encodeURIComponent(category)}`);
+      if (search)    qs.push(`search=${encodeURIComponent(search)}`);
+      // Default to not-contacted if no filter is explicitly set
+      if (contacted) qs.push(`contacted=${encodeURIComponent(contacted)}`);
+      else           qs.push('contacted=false');
+      url += qs.join('&');
+
+      try {
+        toast('Downloading CSV…', 'info');
+        const res = await fetch(url, {
+          headers: { 'Authorization': authToken },
+        });
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          throw new Error(`HTTP ${res.status}: ${text.slice(0, 120)}`);
+        }
+        const blob = await res.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `sophia-leads-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(a.href);
+        toast('CSV downloaded!', 'success');
+      } catch (e) {
+        toast('Download failed: ' + e.message, 'error');
+      }
     }
 
     initAuth();
