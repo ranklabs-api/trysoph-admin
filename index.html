@@ -343,6 +343,84 @@
     }
     .user-pill.visible { display: flex; }
     .user-email { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ── Manage modal ─────────────────────────────────────────── */
+    .modal-bg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 900;
+      background: rgba(4,4,10,0.72);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .modal-bg.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      animation: modalIn 0.2s ease;
+    }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-title { font-size: 1.05rem; font-weight: 700; color: #f0f0fc; }
+    .modal-sub { font-size: 0.78rem; color: var(--muted2); margin-top: 0.2rem; }
+    .modal-body { padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+    .modal-field { display: flex; flex-direction: column; gap: 0.35rem; }
+    .modal-field label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .modal-field input, .modal-field select, .modal-field textarea {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 0.55rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-family: inherit;
+    }
+    .modal-field textarea { resize: vertical; min-height: 180px; line-height: 1.5; }
+    .modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus { outline: none; border-color: var(--accent); }
+    .tracking {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+    }
+    .tracking-title { font-size: 0.72rem; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.75rem; }
+    .track-grid { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+    .track-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; color: var(--text); cursor: pointer; }
+    .track-item input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+    .m-last-contact { font-size: 0.75rem; color: var(--muted); margin-top: 0.75rem; }
+    .modal-footer {
+      display: flex;
+      gap: 0.6rem;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      padding: 1.1rem 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+    @media (max-width: 560px) {
+      .modal { max-width: 100%; }
+    }
+
+    .dots { display: inline-flex; gap: 0.25rem; vertical-align: middle; margin-left: 0.4rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.12); border: 1px solid var(--border2); }
+    .dot.on { background: var(--amber); border-color: var(--amber); }
+    .contacted-tick { color: var(--green); font-size: 0.7rem; margin-left: 0.35rem; white-space: nowrap; }
+    .badge-archived { background: rgba(90,90,122,0.18); color: var(--muted2); }
+    .badge-needs_followup { background: rgba(248,113,113,0.1); color: var(--red); }
   </style>
 </head>
 <body>
@@ -373,10 +451,12 @@
   <div class="main">
 
     <div class="stats-grid" id="stats-grid">
-      <div class="stat-card"><div class="stat-val" id="s-total">—</div><div class="stat-lbl">Total Leads</div></div>
-      <div class="stat-card"><div class="stat-val" id="s-new">—</div><div class="stat-lbl">New</div></div>
-      <div class="stat-card"><div class="stat-val" id="s-contacted">—</div><div class="stat-lbl">Contacted</div></div>
-      <div class="stat-card"><div class="stat-val" id="s-rejected">—</div><div class="stat-lbl">Rejected</div></div>
+      <div class="stat-card" data-status="" style="cursor:pointer"><div class="stat-val" id="s-total">—</div><div class="stat-lbl">Total Leads</div></div>
+      <div class="stat-card" data-status="new" style="cursor:pointer"><div class="stat-val" id="s-new">—</div><div class="stat-lbl">New</div></div>
+      <div class="stat-card" data-status="" style="cursor:pointer"><div class="stat-val" id="s-contacted">—</div><div class="stat-lbl">Contacted</div></div>
+      <div class="stat-card" data-status="rejected" style="cursor:pointer"><div class="stat-val" id="s-rejected">—</div><div class="stat-lbl">Rejected</div></div>
+      <div class="stat-card" data-status="needs_followup" style="cursor:pointer"><div class="stat-val" id="s-followup" style="background:none;-webkit-text-fill-color:var(--red);color:var(--red)">—</div><div class="stat-lbl">&#9888; Follow-up</div></div>
+      <div class="stat-card" data-status="archived" style="cursor:pointer"><div class="stat-val" id="s-archived">—</div><div class="stat-lbl">&#128230; Archived</div></div>
       <div class="stat-card"><div class="stat-val" id="s-sessions">—</div><div class="stat-lbl">Discovery Sessions</div></div>
       <div class="stat-card"><div class="stat-val" id="s-cities">—</div><div class="stat-lbl">Cities</div></div>
     </div>
@@ -450,9 +530,11 @@
     <div class="leads-header">
       <div class="filters">
         <select class="filter-select" id="filter-status" onchange="loadLeads()">
-          <option value="">All Status</option>
           <option value="new" selected>New</option>
+          <option value="needs_followup">&#9888; Needs follow-up</option>
           <option value="rejected">Rejected</option>
+          <option value="archived">&#128230; Archived</option>
+          <option value="all">All</option>
         </select>
         <select class="filter-select" id="filter-contacted" onchange="loadLeads()">
           <option value="">All</option>
@@ -480,10 +562,11 @@
             <th>Contact</th>
             <th>Rating</th>
             <th>Status</th>
+            <th></th>
           </tr>
         </thead>
         <tbody id="leads-body">
-          <tr><td colspan="6" class="loading"><span class="spinner"></span> Loading leads…</td></tr>
+          <tr><td colspan="7" class="loading"><span class="spinner"></span> Loading leads…</td></tr>
         </tbody>
       </table>
     </div>
@@ -491,11 +574,56 @@
 
   </div>
 
+  <div class="modal-bg" id="modal-bg">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="m-title">Manage lead</div>
+          <div class="modal-sub" id="m-sub"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-field">
+          <label>To</label>
+          <input type="email" id="m-email" placeholder="lead@example.com">
+        </div>
+        <div class="modal-field">
+          <label>Send from</label>
+          <select id="m-sender"></select>
+        </div>
+        <div class="modal-field">
+          <label>Subject</label>
+          <input type="text" id="m-subject">
+        </div>
+        <div class="modal-field">
+          <label>Body</label>
+          <textarea id="m-body" rows="10"></textarea>
+        </div>
+        <div class="tracking">
+          <div class="tracking-title">Contact tracking</div>
+          <div class="track-grid">
+            <label class="track-item"><input type="checkbox" id="m-contacted"> Contacted</label>
+            <label class="track-item"><input type="checkbox" id="m-followup1"> Follow-up #1</label>
+            <label class="track-item"><input type="checkbox" id="m-followup2"> Follow-up #2</label>
+          </div>
+          <div class="m-last-contact" id="m-last-contact"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+        <button class="btn btn-outline" style="color:var(--red);border-color:rgba(248,113,113,0.4)" onclick="rejectLead()">Reject</button>
+        <button class="btn btn-outline" onclick="saveDraft()">Save draft</button>
+        <button class="btn btn-primary" onclick="sendNow()">Send now</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast-container" id="toast-container"></div>
 
   <script>
     const API_BASE = 'https://sophiaprovider.com';
-    const LEGACY_AUTH = 'Bearer sophia-admin-6f8a2c1b4d9e';
+    const LEGACY_AUTH = 'Bearer 4f5fc5891a527797c923713fbccc1499a90c18f641801027';
 
     let authToken = LEGACY_AUTH;
     let currentOffset = 0;
@@ -653,6 +781,8 @@
         countUp(document.getElementById('s-new'), sc.new || 0);
         countUp(document.getElementById('s-contacted'), sc.contacted || 0);
         countUp(document.getElementById('s-rejected'), sc.rejected || 0);
+        countUp(document.getElementById('s-followup'), sc.needs_followup || 0);
+        countUp(document.getElementById('s-archived'), sc.archived || 0);
         countUp(document.getElementById('s-sessions'), d.discovery_sessions || 0);
         countUp(document.getElementById('s-cities'), (d.top_cities || []).length);
 
@@ -732,14 +862,14 @@
       if (search)   url += `&search=${encodeURIComponent(search)}`;
 
       const tbody = document.getElementById('leads-body');
-      tbody.innerHTML = '<tr><td colspan="6" class="loading"><span class="spinner"></span> Loading…</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="loading"><span class="spinner"></span> Loading…</td></tr>';
 
       try {
         const data = await api(url);
         const leads = data.leads || [];
 
         if (!leads.length) {
-          tbody.innerHTML = '<tr><td colspan="6" class="empty">No leads found</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7" class="empty">No leads found</td></tr>';
           document.getElementById('pagination').innerHTML = '';
           return;
         }
@@ -752,8 +882,10 @@
           const contact = l.email
             ? `<div style="font-size:0.78rem">&#9993; ${esc(l.email)}</div>${l.phone ? `<div style="font-size:0.72rem;color:var(--muted)">&#128222; ${esc(l.phone)}</div>` : ''}`
             : `<span style="color:var(--muted);font-size:0.75rem">No email</span>`;
-          const isContacted = l.contacted === true;
+          const isContacted = l.contacted === true || l.manually_contacted;
           const checked = isContacted ? 'checked' : '';
+          const dots = followupDots(l);
+          const tick = isContacted ? '<span class="contacted-tick">✓ contacted</span>' : '';
 
           return `
             <tr>
@@ -764,8 +896,9 @@
               </td>
               <td><div style="font-size:0.82rem">${esc(l.city)}, ${esc(l.state)}</div></td>
               <td>${contact}</td>
-              <td>${rating}</td>
-              <td>${statusBadge}</td>
+              <td>${rating}${dots}</td>
+              <td>${statusBadge}${tick}</td>
+              <td><button class="btn btn-outline btn-sm" data-action="manage" data-id="${esc(l.id)}">Manage</button></td>
             </tr>
           `;
         }).join('');
@@ -780,7 +913,7 @@
         document.getElementById('pagination').innerHTML = pag;
 
       } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="6" class="loading" style="color:var(--red)">Error: ${esc(e.message)}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="loading" style="color:var(--red)">Error: ${esc(e.message)}</td></tr>`;
       }
     }
 
@@ -842,6 +975,225 @@
       searchTimeout = setTimeout(() => loadLeads(0), 320);
     }
 
+    // ── Modal state ──────────────────────────────────────────────
+    let modalLead = null;
+    let modalDirty = false;
+    let sendersCache = [];
+
+    async function loadSenders() {
+      try {
+        const d = await api('/api/admin/senders');
+        sendersCache = d.senders || [];
+        const sel = document.getElementById('m-sender');
+        sel.innerHTML = sendersCache.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+        if (d.default && sendersCache.length) sel.value = d.default;
+      } catch (e) { /* senders optional */ }
+    }
+
+    function getSelectedSender() {
+      return document.getElementById('m-sender').value || (sendersCache[0] || 'josiah@trysoph.com');
+    }
+
+    function followupDots(lead) {
+      const count = lead.follow_up_count || 0;
+      let dots = '<span class="dots">';
+      for (let i = 1; i <= 2; i++) {
+        dots += `<span class="dot ${i <= count ? 'on' : ''}"></span>`;
+      }
+      dots += '</span>';
+      return dots;
+    }
+
+    function closeModal() {
+      document.getElementById('modal-bg').classList.remove('open');
+      modalLead = null;
+      modalDirty = false;
+    }
+
+    async function openModal(id) {
+      try {
+        const lead = await api(`/api/admin/leads/${id}`);
+        modalLead = lead;
+        modalDirty = false;
+        document.getElementById('m-title').textContent = lead.business_name || 'Manage lead';
+        document.getElementById('m-sub').textContent =
+          `${(lead.category || '').replace(/_/g, ' ')} · ${lead.city || ''}, ${lead.state || ''}`;
+        document.getElementById('m-email').value = lead.email || '';
+
+        // Load email draft
+        const sender = getSelectedSender();
+        const draft = await api(`/api/admin/leads/${id}/email?from=${encodeURIComponent(sender)}`);
+        document.getElementById('m-subject').value = lead.email_subject || draft.subject;
+        document.getElementById('m-body').value = lead.email_body || draft.body;
+
+        // Tracking
+        document.getElementById('m-contacted').checked = !!lead.contacted;
+        document.getElementById('m-followup1').checked = (lead.follow_up_count >= 1);
+        document.getElementById('m-followup2').checked = (lead.follow_up_count >= 2);
+
+        // Last contacted
+        if (lead.last_contacted_at) {
+          const d = new Date(lead.last_contacted_at);
+          document.getElementById('m-last-contact').textContent =
+            `Last contacted: ${d.toLocaleDateString()} at ${d.toLocaleTimeString()}`;
+        } else {
+          document.getElementById('m-last-contact').textContent = 'Not contacted yet';
+        }
+
+        document.getElementById('modal-bg').classList.add('open');
+      } catch (e) {
+        toast('Failed to load lead: ' + e.message, 'error');
+      }
+    }
+
+    // Sender change regenerates draft only if unedited
+    document.getElementById('m-sender').addEventListener('change', async function() {
+      if (!modalLead || modalDirty) return;
+      try {
+        const sender = getSelectedSender();
+        const draft = await api(`/api/admin/leads/${modalLead.id}/email?from=${encodeURIComponent(sender)}`);
+        if (!modalLead.email_body) {
+          document.getElementById('m-subject').value = draft.subject;
+          document.getElementById('m-body').value = draft.body;
+        }
+      } catch (_) {}
+    });
+
+    // Mark body as dirty on edit
+    document.getElementById('m-body').addEventListener('input', function() {
+      modalDirty = true;
+    });
+    document.getElementById('m-subject').addEventListener('input', function() {
+      modalDirty = true;
+    });
+
+    async function patchLead(fields, msg) {
+      if (!modalLead) return;
+      await api(`/api/admin/leads/${modalLead.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(fields),
+      });
+      if (msg) toast(msg);
+      // Refresh current lead
+      const fresh = await api(`/api/admin/leads/${modalLead.id}`);
+      modalLead = fresh;
+    }
+
+    async function toggleContacted() {
+      const checked = document.getElementById('m-contacted').checked;
+      const now = new Date().toISOString();
+      await patchLead({
+        contacted: checked,
+        last_contacted_at: checked ? now : modalLead.last_contacted_at,
+      }, checked ? '✓ Marked as contacted' : 'Contacted flag removed');
+      document.getElementById('m-last-contact').textContent = checked
+        ? `Last contacted: ${new Date(now).toLocaleDateString()} at ${new Date(now).toLocaleTimeString()}`
+        : 'Not contacted yet';
+      document.getElementById('m-followup1').checked = (modalLead.follow_up_count >= 1);
+      document.getElementById('m-followup2').checked = (modalLead.follow_up_count >= 2);
+    }
+
+    async function toggleFollowup() {
+      const fu1 = document.getElementById('m-followup1').checked;
+      const fu2 = document.getElementById('m-followup2').checked;
+      let count = 0;
+      if (fu1) count = 1;
+      if (fu2) count = 2;
+
+      const now = new Date().toISOString();
+      const fields = {
+        follow_up_count: count,
+        last_contacted_at: now,
+        contacted: true,
+      };
+
+      // Auto-archive if 2nd follow-up
+      if (count >= 2) {
+        fields.archived = true;
+      }
+
+      await patchLead(fields, count >= 2 ? '2nd follow-up sent — archived' : `Follow-up ${count}/2`);
+      document.getElementById('m-contacted').checked = true;
+      document.getElementById('m-last-contact').textContent =
+        `Last contacted: ${new Date(now).toLocaleDateString()} at ${new Date(now).toLocaleTimeString()}`;
+
+      if (count >= 2) {
+        setTimeout(() => { closeModal(); refreshAll(); }, 800);
+      }
+    }
+
+    // Wire tracking checkbox events
+    document.getElementById('m-contacted').addEventListener('change', toggleContacted);
+    document.getElementById('m-followup1').addEventListener('change', toggleFollowup);
+    document.getElementById('m-followup2').addEventListener('change', toggleFollowup);
+
+    function saveDraft() {
+      const fields = {
+        email: document.getElementById('m-email').value.trim(),
+        email_subject: document.getElementById('m-subject').value.trim(),
+        email_body: document.getElementById('m-body').value.trim(),
+        sent_from: getSelectedSender(),
+      };
+      patchLead(fields, 'Draft saved');
+      modalDirty = false;
+      loadLeads(currentOffset);
+    }
+
+    async function sendNow() {
+      if (!confirm('Send this email now?')) return;
+      const payload = {
+        to: document.getElementById('m-email').value.trim(),
+        sent_from: getSelectedSender(),
+        subject: document.getElementById('m-subject').value.trim(),
+        body: document.getElementById('m-body').value.trim(),
+      };
+      try {
+        const res = await api(`/api/admin/leads/${modalLead.id}/send`, {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+        toast('✓ Email sent!');
+        closeModal();
+        refreshAll();
+      } catch (e) {
+        if (e.message.includes('501')) {
+          toast('Email sending not configured yet — draft saved', 'info');
+          saveDraft();
+        } else {
+          toast('Send failed: ' + e.message, 'error');
+        }
+      }
+    }
+
+    async function rejectLead() {
+      const reason = prompt('Rejection reason (optional):') || '';
+      if (!modalLead) return;
+      await api(`/api/admin/leads/${modalLead.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'rejected', rejection_reason: reason }),
+      });
+      toast('Rejected');
+      closeModal();
+      refreshAll();
+    }
+
+    // ── Stat card quick-filter clicks ─────────────────────────────
+    document.getElementById('stats-grid').addEventListener('click', function(e) {
+      const card = e.target.closest('.stat-card');
+      if (!card) return;
+      const status = card.dataset.status;
+      if (status === undefined) return;
+      document.getElementById('filter-status').value = status || '';
+      loadLeads(0);
+    });
+
+    // ── Manage button delegation ──────────────────────────────────
+    document.getElementById('leads-body').addEventListener('click', function(e) {
+      const btn = e.target.closest('button[data-action="manage"]');
+      if (!btn) return;
+      openModal(btn.dataset.id);
+    });
+
     async function downloadCsv() {
       const status   = document.getElementById('filter-status').value;
       const contacted = document.getElementById('filter-contacted').value;
@@ -882,6 +1234,7 @@
     }
 
     initAuth();
+    loadSenders();
   </script>
 </body>
 </html>
