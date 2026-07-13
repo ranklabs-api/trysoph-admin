@@ -746,9 +746,7 @@
 
       // Safety net: if Google SSO doesn't respond within 8 seconds, fall back to legacy API key
       setTimeout(() => {
-        if (authToken === LEGACY_AUTH) return; // already fell back
         if (document.getElementById('auth-gate').classList.contains('visible')) {
-          authToken = LEGACY_AUTH;
           hideGate();
           loadStats();
           loadLeads();
